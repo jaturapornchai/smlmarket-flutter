@@ -25,6 +25,7 @@ class _SearchPageState extends State<SearchPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   String _currentQuery = '';
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
@@ -49,9 +50,14 @@ class _SearchPageState extends State<SearchPage>
   }
 
   void _onScroll() {
-    if (_isBottom) {
+    if (_isBottom && !_isLoadingMore) {
       final state = context.read<SearchBloc>().state;
       if (state is SearchSuccess && state.hasMoreData) {
+        _isLoadingMore = true;
+        developer.log(
+          '📜 Loading more products for: "$_currentQuery", offset: ${state.products.length}',
+          name: 'SearchPage',
+        );
         context.read<SearchBloc>().add(
           LoadMoreProductsEvent(
             query: _currentQuery,
@@ -105,43 +111,51 @@ class _SearchPageState extends State<SearchPage>
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: _buildSearchBar(),
-              ),
-              // Search results
+              ), // Search results
               Expanded(
-                child: BlocBuilder<SearchBloc, SearchState>(
-                  builder: (context, state) {
-                    if (state is SearchInitial) {
-                      return CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [_buildEmptyState()],
-                      );
-                    } else if (state is SearchEnhancing) {
-                      return CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [_buildEnhancingState(state)],
-                      );
-                    } else if (state is SearchLoading) {
-                      return CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [_buildLoadingState(state)],
-                      );
-                    } else if (state is SearchSuccess) {
-                      return SingleChildScrollView(
-                        child: _buildSuccessState(state),
-                      );
-                    } else if (state is SearchLoadingMore) {
-                      return CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [_buildLoadingMoreState(state)],
-                      );
-                    } else if (state is SearchError) {
-                      return CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [_buildErrorState(state)],
-                      );
+                child: BlocListener<SearchBloc, SearchState>(
+                  listener: (context, state) {
+                    // Reset loading more flag when search completes or fails
+                    if (state is SearchSuccess || state is SearchError) {
+                      _isLoadingMore = false;
                     }
-                    return const Center(child: Text('Unknown state'));
                   },
+                  child: BlocBuilder<SearchBloc, SearchState>(
+                    builder: (context, state) {
+                      if (state is SearchInitial) {
+                        return CustomScrollView(
+                          controller: _scrollController,
+                          slivers: [_buildEmptyState()],
+                        );
+                      } else if (state is SearchEnhancing) {
+                        return CustomScrollView(
+                          controller: _scrollController,
+                          slivers: [_buildEnhancingState(state)],
+                        );
+                      } else if (state is SearchLoading) {
+                        return CustomScrollView(
+                          controller: _scrollController,
+                          slivers: [_buildLoadingState(state)],
+                        );
+                      } else if (state is SearchSuccess) {
+                        return CustomScrollView(
+                          controller: _scrollController,
+                          slivers: [_buildSuccessState(state)],
+                        );
+                      } else if (state is SearchLoadingMore) {
+                        return CustomScrollView(
+                          controller: _scrollController,
+                          slivers: [_buildLoadingMoreState(state)],
+                        );
+                      } else if (state is SearchError) {
+                        return CustomScrollView(
+                          controller: _scrollController,
+                          slivers: [_buildErrorState(state)],
+                        );
+                      }
+                      return const Center(child: Text('Unknown state'));
+                    },
+                  ),
                 ),
               ),
             ],
@@ -322,56 +336,49 @@ class _SearchPageState extends State<SearchPage>
   }
 
   Widget _buildSuccessState(SearchSuccess state) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (state.products.isEmpty) {
-          return SliverFillRemaining(
-            child: Center(
-              child: Text(
-                'ไม่พบสินค้าที่ตรงกับคำค้นหา "${state.originalQuery}"',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
-          );
-        }
-        double maxWidth = constraints.maxWidth;
-        double gridColumns = maxWidth / 400;
-        double cardWidth = (maxWidth) / gridColumns;
-        developer.log(
-          'Calculated card width: $cardWidth for grid columns: $gridColumns',
-          name: 'SearchPage',
-        );
-        return Wrap(
-          children: state.products.map((product) {
-            return Container(
-              width: cardWidth,
-              child: _buildProductCard(product),
-            );
-          }).toList(),
-        );
-      },
-    );
-    /*return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          if (index == 0) {
-            return _buildSearchInfo(state);
-          }
+    if (state.products.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Text(
+            'ไม่พบสินค้าที่ตรงกับคำค้นหา "${state.originalQuery}"',
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+      );
+    }
 
-          final productIndex = index - 1;
-          if (productIndex >= state.products.length) {
-            return state.hasMoreData
-                ? const Padding(
-                    padding: EdgeInsets.all(AppSpacing.lg),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                : const SizedBox.shrink();
-          }
-          return _buildProductCard(state.products[productIndex]);
-        }, childCount: state.products.length + 2),
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      sliver: SliverToBoxAdapter(
+        child: Column(
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                double maxWidth = constraints.maxWidth;
+                int gridColumns = maxWidth ~/ 300;
+                double cardWidth = maxWidth / gridColumns;
+
+                return Wrap(
+                  children: state.products.map((product) {
+                    return Container(
+                      color: Colors.white,
+                      width: cardWidth,
+                      child: _buildProductCard(product),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+            // Show loading indicator if there's more data to load
+            if (state.hasMoreData) ...[
+              const SizedBox(height: AppSpacing.lg),
+              const Center(child: CircularProgressIndicator()),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+          ],
+        ),
       ),
-    );*/
+    );
   }
 
   Widget _buildLoadingMoreState(SearchLoadingMore state) {
@@ -440,59 +447,6 @@ class _SearchPageState extends State<SearchPage>
     );
   }
 
-  Widget _buildSearchInfo(SearchSuccess state) {
-    return GlassmorphismCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'พบ ${state.totalCount} รายการ',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              Text(
-                'ใช้เวลา ${state.durationMs.toStringAsFixed(1)} ms',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-          if (state.originalQuery != state.enhancedQuery) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'คำค้นหาเดิม: "${state.originalQuery}"',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'คำค้นหาที่ปรับปรุง: "${state.enhancedQuery}"',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildSearchInfoFromLoadingMore(SearchLoadingMore state) {
     return GlassmorphismCard(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -508,116 +462,78 @@ class _SearchPageState extends State<SearchPage>
   Widget _buildProductCard(Product product) {
     final imageSize = ResponsiveUtils.getProductImageSize(context);
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: ResponsiveUtils.isMobile(context)
-            ? AppSpacing.md
-            : AppSpacing.lg,
-      ),
-      child: GlassmorphismCard(
-        onTap: () {
-          NavigationHelper.pushToProductDetail(context, product.metadata.code);
-        },
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                child: ProductImage(
-                  imageUrl: product.imageUrl,
-                  width: imageSize,
-                  height: imageSize,
-                  fit: BoxFit.cover,
+    return GlassmorphismCard(
+      onTap: () {
+        NavigationHelper.pushToProductDetail(context, product.metadata.code);
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Product Image
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: ProductImage(
+                imageUrl: product.imageUrl,
+                width: imageSize,
+                height: imageSize,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          // Product Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  product.name,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'รหัส: ${product.metadata.code}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      '₿${product.metadata.price.toStringAsFixed(2)}',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    _buildInfoChip(
+                      Icons.inventory_outlined,
+                      'คงเหลือ: ${product.metadata.balanceQty.toStringAsFixed(0)} ${product.metadata.unit}',
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(width: AppSpacing.md),
-            // Product Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          product.name,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${(product.similarityScore * 100).toStringAsFixed(1)}%',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'รหัส: ${product.metadata.code}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(
-                        '₿${product.metadata.price.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: [
-                      _buildInfoChip(
-                        Icons.inventory_outlined,
-                        'คงเหลือ: ${product.metadata.balanceQty.toStringAsFixed(0)} ${product.metadata.unit}',
-                      ),
-                      _buildInfoChip(
-                        Icons.business_outlined,
-                        product.metadata.supplierCode,
-                      ),
-                      _buildInfoChip(
-                        Icons.attach_money,
-                        'ราคา: ₿${product.metadata.price.toStringAsFixed(2)}',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

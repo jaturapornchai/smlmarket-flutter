@@ -48,14 +48,8 @@ dependencies:
   equatable: ^2.0.5
   # Go Router for navigation
   go_router: ^14.2.7
-
-  # Beautiful UI packages
-  google_fonts: ^6.1.0
+  # Beautiful UI packages - using only core Flutter
   flutter_staggered_animations: ^1.1.1
-  shimmer: ^3.0.0
-  cached_network_image: ^3.3.0
-  glassmorphism: ^3.0.0
-  lottie: ^2.7.0
 
 dev_dependencies:
   flutter_test:

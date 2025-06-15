@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
 import '../theme/app_theme.dart';
 
 class GlassmorphismCard extends StatefulWidget {
@@ -14,9 +13,9 @@ class GlassmorphismCard extends StatefulWidget {
     super.key,
     required this.child,
     this.onTap,
-    this.borderRadius = 20,
+    this.borderRadius = 2,
     this.padding = const EdgeInsets.all(AppSpacing.md),
-    this.blur = 20,
+    this.blur = 2,
     this.borderColor,
   });
 
@@ -181,20 +180,80 @@ class _AnimatedListItemState extends State<AnimatedListItem>
   }
 }
 
-class ShimmerLoading extends StatelessWidget {
+class ShimmerLoading extends StatefulWidget {
   final Widget child;
   final bool isLoading;
 
   const ShimmerLoading({super.key, required this.child, this.isLoading = true});
 
   @override
+  State<ShimmerLoading> createState() => _ShimmerLoadingState();
+}
+
+class _ShimmerLoadingState extends State<ShimmerLoading>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
+    );
+    if (widget.isLoading) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(ShimmerLoading oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isLoading && !oldWidget.isLoading) {
+      _controller.repeat();
+    } else if (!widget.isLoading && oldWidget.isLoading) {
+      _controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (!isLoading) return child;
-    return Shimmer.fromColors(
-      baseColor: const Color(0xFFE5E5E5),
-      highlightColor: const Color(0xFFC0C0C0),
-      period: const Duration(milliseconds: 1500),
-      child: child,
+    if (!widget.isLoading) return widget.child;
+
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: const [
+                Color(0xFFE5E5E5),
+                Color(0xFFC0C0C0),
+                Color(0xFFE5E5E5),
+              ],
+              stops: [
+                (_animation.value - 1).clamp(0.0, 1.0),
+                _animation.value.clamp(0.0, 1.0),
+                (_animation.value + 1).clamp(0.0, 1.0),
+              ],
+            ).createShader(bounds);
+          },
+          child: widget.child,
+        );
+      },
     );
   }
 }

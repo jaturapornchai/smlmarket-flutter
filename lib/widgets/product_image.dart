@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class ProductImage extends StatelessWidget {
   final String? imageUrl;
@@ -92,39 +91,42 @@ class ProductImage extends StatelessWidget {
         borderRadius: BorderRadius.circular(11),
         child: Stack(
           children: [
-            CachedNetworkImage(
-              imageUrl: imageUrl!,
+            Image.network(
+              imageUrl!,
               width: width,
               height: height,
               fit: fit,
-              placeholder: (context, url) => Container(
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  width: width,
+                  height: height,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFC0C0C0), Color(0xFFE5E5E5)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(11)),
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) => Container(
                 width: width,
                 height: height,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
                     colors: [Color(0xFFC0C0C0), Color(0xFFE5E5E5)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: const BorderRadius.all(Radius.circular(11)),
-                ),
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                width: width,
-                height: height,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFC0C0C0), Color(0xFFE5E5E5)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.all(Radius.circular(11)),
+                  borderRadius: BorderRadius.all(Radius.circular(11)),
                 ),
                 child: Icon(
                   Icons.inventory_outlined,
