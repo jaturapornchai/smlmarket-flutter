@@ -7,26 +7,59 @@ part 'product.g.dart';
 class Product extends Equatable {
   final String id;
   final String name;
-  @JsonKey(name: 'img_url')
-  final String? imageUrl;
-
   @JsonKey(name: 'similarity_score')
   final double similarityScore;
+  final String code;
+  @JsonKey(name: 'balance_qty')
+  final double balanceQty;
+  final double price;
+  @JsonKey(name: 'supplier_code')
+  final String supplierCode;
+  final String unit;
+  @JsonKey(name: 'img_url')
+  final String? imageUrl;
+  @JsonKey(name: 'search_priority')
+  final int searchPriority;
 
-  final ProductMetadata metadata;
   const Product({
     required this.id,
     required this.name,
     required this.similarityScore,
-    required this.metadata,
+    required this.code,
+    required this.balanceQty,
+    required this.price,
+    required this.supplierCode,
+    required this.unit,
     this.imageUrl,
+    required this.searchPriority,
   });
+
   factory Product.fromJson(Map<String, dynamic> json) =>
       _$ProductFromJson(json);
   Map<String, dynamic> toJson() => _$ProductToJson(this);
 
   @override
-  List<Object?> get props => [id, name, imageUrl, similarityScore, metadata];
+  List<Object?> get props => [
+    id,
+    name,
+    similarityScore,
+    code,
+    balanceQty,
+    price,
+    supplierCode,
+    unit,
+    imageUrl,
+    searchPriority,
+  ];
+
+  // Helper getters for backward compatibility
+  ProductMetadata get metadata => ProductMetadata(
+    code: code,
+    unit: unit,
+    balanceQty: balanceQty,
+    supplierCode: supplierCode,
+    price: price,
+  );
 }
 
 @JsonSerializable()

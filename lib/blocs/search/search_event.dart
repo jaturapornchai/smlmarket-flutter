@@ -13,7 +13,7 @@ class SearchProductsEvent extends SearchEvent {
   final int offset;
   const SearchProductsEvent({
     required this.query,
-    this.limit = 200,
+    this.limit = 50,
     this.offset = 0,
   });
 
@@ -25,11 +25,10 @@ class LoadMoreProductsEvent extends SearchEvent {
   final String query;
   final int offset;
   final int limit;
-
   const LoadMoreProductsEvent({
     required this.query,
     required this.offset,
-    this.limit = 200,
+    this.limit = 50,
   });
 
   @override

@@ -10,16 +10,26 @@ Product _$ProductFromJson(Map<String, dynamic> json) => Product(
   id: json['id'] as String,
   name: json['name'] as String,
   similarityScore: (json['similarity_score'] as num).toDouble(),
-  metadata: ProductMetadata.fromJson(json['metadata'] as Map<String, dynamic>),
+  code: json['code'] as String,
+  balanceQty: (json['balance_qty'] as num).toDouble(),
+  price: (json['price'] as num).toDouble(),
+  supplierCode: json['supplier_code'] as String,
+  unit: json['unit'] as String,
   imageUrl: json['img_url'] as String?,
+  searchPriority: (json['search_priority'] as num).toInt(),
 );
 
 Map<String, dynamic> _$ProductToJson(Product instance) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
-  'img_url': instance.imageUrl,
   'similarity_score': instance.similarityScore,
-  'metadata': instance.metadata,
+  'code': instance.code,
+  'balance_qty': instance.balanceQty,
+  'price': instance.price,
+  'supplier_code': instance.supplierCode,
+  'unit': instance.unit,
+  'img_url': instance.imageUrl,
+  'search_priority': instance.searchPriority,
 };
 
 ProductMetadata _$ProductMetadataFromJson(Map<String, dynamic> json) =>

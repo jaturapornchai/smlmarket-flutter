@@ -66,7 +66,7 @@ class _SearchPageState extends State<SearchPage> {
           LoadMoreProductsEvent(
             query: _currentQuery,
             offset: state.products.length,
-            limit: 200,
+            limit: 50,
           ),
         );
       } else {
@@ -102,7 +102,7 @@ class _SearchPageState extends State<SearchPage> {
         _isLoadingMore = false;
       });
       context.read<SearchBloc>().add(
-        SearchProductsEvent(query: query, limit: 200, offset: 0),
+        SearchProductsEvent(query: query, limit: 50, offset: 0),
       );
     } else {
       developer.log('⚠️ Empty search query, ignoring', name: 'SearchPage');

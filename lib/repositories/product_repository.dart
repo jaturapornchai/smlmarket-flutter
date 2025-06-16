@@ -3,13 +3,13 @@ import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import '../models/search_request.dart';
 import '../models/search_response.dart';
+import '../global.dart' as global;
 
 class ProductRepository {
-  static const String baseUrl = 'http://192.168.2.36:8008';
   Future<SearchResponse> searchProducts(SearchRequest request) async {
     try {
       developer.log(
-        '📤 Sending request to API: $baseUrl/search',
+        '📤 Sending request to API: ${global.apiBaseUrl()}/search',
         name: 'ProductRepository',
       );
       developer.log(
@@ -18,7 +18,7 @@ class ProductRepository {
       );
 
       final response = await http.post(
-        Uri.parse('$baseUrl/search'),
+        Uri.parse('${global.apiBaseUrl()}/search'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(request.toJson()),
       );
@@ -30,6 +30,11 @@ class ProductRepository {
         );
         developer.log(
           '📄 Response body length: ${response.body.length} characters',
+          name: 'ProductRepository',
+        );
+        // Parse the JSON response
+        developer.log(
+          '📄 Response body: ${response.body}',
           name: 'ProductRepository',
         );
 

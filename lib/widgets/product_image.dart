@@ -18,9 +18,35 @@ class ProductImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.placeholder,
   });
+  double _getSafeIconSize() {
+    if (width == null || width! <= 0) {
+      return 40.0;
+    }
+    double calculatedSize = width! * 0.4;
+    // Ensure the size is finite and within reasonable bounds
+    if (!calculatedSize.isFinite || calculatedSize <= 0) {
+      return 40.0;
+    }
+    // Clamp the size to prevent extremely large icons
+    return calculatedSize.clamp(20.0, 100.0);
+  }
+
+  double _getSafePlaceholderIconSize() {
+    if (width == null || width! <= 0) {
+      return 30.0;
+    }
+    double calculatedSize = width! * 0.3;
+    // Ensure the size is finite and within reasonable bounds
+    if (!calculatedSize.isFinite || calculatedSize <= 0) {
+      return 30.0;
+    }
+    // Clamp the size to prevent extremely large icons
+    return calculatedSize.clamp(15.0, 80.0);
+  }
+
   @override
   Widget build(BuildContext context) {
-    // If imageUrl is empty, null, or invalid, show placeholder with icon
+    // log
     if (imageUrl == null || imageUrl!.isEmpty) {
       return Container(
         width: width,
@@ -68,10 +94,14 @@ class ProductImage extends StatelessWidget {
               ),
             ),
             Center(
-              child: Icon(
-                Icons.inventory_outlined,
-                color: Colors.white,
-                size: (width != null && width! > 0) ? width! * 0.4 : 40,
+              child: SizedBox(
+                width: (width != null && width! > 0) ? width! * 0.4 : 40,
+                height: (width != null && width! > 0) ? width! * 0.4 : 40,
+                child: Icon(
+                  Icons.inventory_outlined,
+                  color: Colors.white,
+                  size: _getSafeIconSize(),
+                ),
               ),
             ),
           ],
@@ -209,26 +239,32 @@ class ProductImage extends StatelessWidget {
           Icon(
             Icons.inventory_outlined,
             color: Colors.white,
-            size: (width != null && width! > 0) ? width! * 0.3 : 30,
+            size: _getSafePlaceholderIconSize(),
           ),
           if (kIsWeb) ...[
             const SizedBox(height: 4),
-            Text(
-              'Image not\navailable',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 10,
+            SizedBox(
+              width: (width != null && width! > 0) ? width! * 0.8 : 80,
+              child: Text(
+                'Image not\navailable',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 10,
+                ),
               ),
             ),
             if (reason.isNotEmpty) ...[
               const SizedBox(height: 2),
-              Text(
-                '($reason)',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 8,
+              SizedBox(
+                width: (width != null && width! > 0) ? width! * 0.8 : 80,
+                child: Text(
+                  '($reason)',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 8,
+                  ),
                 ),
               ),
             ],

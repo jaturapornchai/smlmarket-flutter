@@ -9,7 +9,7 @@ part of 'search_request.dart';
 SearchRequest _$SearchRequestFromJson(Map<String, dynamic> json) =>
     SearchRequest(
       query: json['query'] as String,
-      limit: (json['limit'] as num?)?.toInt() ?? 200,
+      limit: (json['limit'] as num?)?.toInt() ?? 50,
       offset: (json['offset'] as num?)?.toInt() ?? 0,
     );
 

@@ -45,10 +45,12 @@ dependencies:
   # JSON annotation for serialization
   json_annotation: ^4.8.1
   # Equatable for value equality
-  equatable: ^2.0.5
-  # Go Router for navigation
-  go_router: ^14.2.7 # Image loading for web compatibility
+  equatable: ^2.0.5 # Go Router for navigation
+  go_router: ^14.2.7
+  # Image loading for web compatibility
   cached_network_image: ^3.3.1
+  # Cloudinary for image optimization
+  cloudinary_public: ^0.21.0
 
 dev_dependencies:
   flutter_test:
