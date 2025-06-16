@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui_components.dart';
-import '../utils/responsive_utils.dart';
 import '../widgets/responsive_layout.dart';
 import '../routes/navigation_helper.dart';
 
@@ -34,267 +33,312 @@ class _ProfilePageState extends State<ProfilePage>
 
   @override
   Widget build(BuildContext context) {
-    final appBarHeight = ResponsiveUtils.getAppBarHeight(context);
-
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text(
+          'โปรไฟล์',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: AppColors.primary,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+        ),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () => _showEditProfileDialog(),
+          ),
+        ],
+      ),
       body: ResponsiveLayout(
-        fullWidth: true, // ใช้ full width สำหรับหน้า Profile
-        child: CustomScrollView(
-          slivers: [
-            // Profile Header
-            SliverAppBar(
-              expandedHeight: appBarHeight,
-              floating: false,
-              pinned: true,
-              stretch: true,
-              backgroundColor: AppColors.primary, // เพิ่ม background color
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  decoration: const BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        right: -50,
-                        top: -50,
-                        child: Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 60),
-                            Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
-                                  width: 3,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.person,
-                                size: 50,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            Text(
-                              'ผู้ใช้งาน',
-                              style: Theme.of(context).textTheme.headlineMedium
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            Text(
-                              'user@smlmarket.com',
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(
-                                    color: Colors.white.withOpacity(0.9),
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+        fullWidth: true,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            children: [
+              // Profile Header
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              ),
-            ), // Profile Stats
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                child: Row(
+                child: Column(
                   children: [
-                    Expanded(
-                      child: AnimatedListItem(
-                        index: 0,
-                        child: GlassmorphismCard(
-                          child: Column(
-                            children: [
-                              Text(
-                                '12',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium
-                                    ?.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              const SizedBox(height: AppSpacing.xs),
-                              Text(
-                                'สินค้า',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: AppColors.textSecondary),
-                              ),
-                            ],
+                    // Profile Avatar
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: Container(
+                          color: Colors.white,
+                          child: Icon(
+                            Icons.person,
+                            size: 60,
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: AnimatedListItem(
-                        index: 1,
-                        child: GlassmorphismCard(
-                          child: Column(
-                            children: [
-                              Text(
-                                '4.8',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium
-                                    ?.copyWith(
-                                      color: AppColors.accent,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              const SizedBox(height: AppSpacing.xs),
-                              Text(
-                                'คะแนน',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: AppColors.textSecondary),
-                              ),
-                            ],
+
+                    const SizedBox(height: AppSpacing.md),
+
+                    // User Name
+                    Text(
+                      'ผู้ใช้งาน',
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.sm),
+
+                    // User Email
+                    Text(
+                      'user@example.com',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.white.withOpacity(0.9),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: AnimatedListItem(
-                        index: 2,
-                        child: GlassmorphismCard(
-                          child: Column(
-                            children: [
-                              Text(
-                                '₿ 2.5',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium
-                                    ?.copyWith(
-                                      color: AppColors.secondary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              const SizedBox(height: AppSpacing.xs),
-                              Text(
-                                'คะแนนสะสม',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: AppColors.textSecondary),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    // Stats Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildStatCard('คำสั่งซื้อ', '12'),
+                        _buildStatCard('สินค้าโปรด', '24'),
+                        _buildStatCard('คะแนน', '4.8'),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ),
 
-            // Menu Items
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  ...List.generate(
-                    _menuItems.length,
-                    (index) => AnimatedListItem(
-                      index: index + 3,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: GlassmorphismCard(
-                          onTap: () {
-                            if (_menuItems[index]['title'] == 'ตั้งค่า') {
-                              NavigationHelper.goToSettings(context);
-                            }
-                          },
-                          child: ListTile(
-                            leading: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                gradient:
-                                    _menuItems[index]['gradient']
-                                        as LinearGradient,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                _menuItems[index]['icon'] as IconData,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ),
-                            title: Text(
-                              _menuItems[index]['title'] as String,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            subtitle: Text(
-                              _menuItems[index]['subtitle'] as String,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.textSecondary),
-                            ),
-                            trailing: Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ]),
-              ),
-            ), // Logout Button
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                child: GradientButton(
-                  text: 'ออกจากระบบ',
-                  onPressed: () {
-                    _showLogoutDialog(context);
-                  },
-                ),
-              ),
-            ),
+              const SizedBox(height: AppSpacing.xl),
 
-            // Bottom spacing
-            const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
-          ],
+              // Profile Menu
+              _buildProfileMenu(),
+
+              const SizedBox(height: AppSpacing.xl),
+
+              // Account Actions
+              _buildAccountActions(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  Widget _buildStatCard(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.white.withOpacity(0.8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileMenu() {
+    final menuItems = [
+      ProfileMenuItem(
+        icon: Icons.person_outline,
+        title: 'ข้อมูลส่วนตัว',
+        subtitle: 'แก้ไขข้อมูลผู้ใช้งาน',
+        onTap: () => _showEditProfileDialog(),
+      ),
+      ProfileMenuItem(
+        icon: Icons.shopping_bag_outlined,
+        title: 'ประวัติการสั่งซื้อ',
+        subtitle: 'ดูรายการสั่งซื้อทั้งหมด',
+        onTap: () => _showOrderHistory(),
+      ),
+      ProfileMenuItem(
+        icon: Icons.favorite_outline,
+        title: 'สินค้าโปรด',
+        subtitle: 'สินค้าที่คุณชื่นชอบ',
+        onTap: () => _showFavorites(),
+      ),
+      ProfileMenuItem(
+        icon: Icons.location_on_outlined,
+        title: 'ที่อยู่จัดส่ง',
+        subtitle: 'จัดการที่อยู่จัดส่ง',
+        onTap: () => _showAddresses(),
+      ),
+      ProfileMenuItem(
+        icon: Icons.payment_outlined,
+        title: 'วิธีการชำระเงิน',
+        subtitle: 'บัตรเครดิตและบัญชีธนาคาร',
+        onTap: () => _showPaymentMethods(),
+      ),
+      ProfileMenuItem(
+        icon: Icons.settings_outlined,
+        title: 'การตั้งค่า',
+        subtitle: 'ปรับแต่งการใช้งาน',
+        onTap: () => NavigationHelper.goToSettings(context),
+      ),
+    ];
+
+    return GlassmorphismCard(
+      child: Column(
+        children: menuItems.map((item) => _buildMenuTile(item)).toList(),
+      ),
+    );
+  }
+
+  Widget _buildMenuTile(ProfileMenuItem item) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(item.icon, color: AppColors.primary, size: 24),
+      ),
+      title: Text(
+        item.title,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+      subtitle: Text(item.subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: item.onTap,
+    );
+  }
+
+  Widget _buildAccountActions() {
+    return Column(
+      children: [
+        // Logout Button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => _showLogoutDialog(),
+            icon: const Icon(Icons.logout),
+            label: const Text('ออกจากระบบ'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // Delete Account Button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => _showDeleteAccountDialog(),
+            icon: const Icon(Icons.delete_forever),
+            label: const Text('ลบบัญชี'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showEditProfileDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('แก้ไขโปรไฟล์'),
+        content: const Text('คุณต้องการแก้ไขข้อมูลโปรไฟล์หรือไม่?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ยกเลิก'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('แก้ไข'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showOrderHistory() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('ฟีเจอร์ประวัติการสั่งซื้อยังไม่พร้อมใช้งาน'),
+      ),
+    );
+  }
+
+  void _showFavorites() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('ฟีเจอร์สินค้าโปรดยังไม่พร้อมใช้งาน')),
+    );
+  }
+
+  void _showAddresses() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('ฟีเจอร์ที่อยู่จัดส่งยังไม่พร้อมใช้งาน')),
+    );
+  }
+
+  void _showPaymentMethods() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('ฟีเจอร์วิธีการชำระเงินยังไม่พร้อมใช้งาน')),
+    );
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
         title: const Text('ออกจากระบบ'),
         content: const Text('คุณต้องการออกจากระบบหรือไม่?'),
         actions: [
@@ -305,7 +349,10 @@ class _ProfilePageState extends State<ProfilePage>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // Add logout logic here
+              // Implement logout logic
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('ออกจากระบบเรียบร้อยแล้ว')),
+              );
             },
             child: const Text('ออกจากระบบ'),
           ),
@@ -314,54 +361,46 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  List<Map<String, dynamic>> get _menuItems => [
-    {
-      'icon': Icons.inventory_2_outlined,
-      'title': 'สินค้าของฉัน',
-      'subtitle': 'จัดการสินค้าในร้าน',
-      'gradient': AppColors.primaryGradient,
-    },
-    {
-      'icon': Icons.shopping_cart_outlined,
-      'title': 'ประวัติการสั่งซื้อ',
-      'subtitle': 'ดูรายการสั่งซื้อทั้งหมด',
-      'gradient': const LinearGradient(
-        colors: [Color(0xFF8B5CF6), Color(0xFFD946EF)],
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ลบบัญชี'),
+        content: const Text(
+          'การดำเนินการนี้ไม่สามารถยกเลิกได้ บัญชีและข้อมูลทั้งหมดจะถูกลบอย่างถาวร',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ยกเลิก'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Implement delete account logic
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('ลบบัญชีเรียบร้อยแล้ว')),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('ลบบัญชี'),
+          ),
+        ],
       ),
-    },
-    {
-      'icon': Icons.favorite_outline,
-      'title': 'รายการโปรด',
-      'subtitle': 'สินค้าที่คุณชื่นชอบ',
-      'gradient': const LinearGradient(
-        colors: [Colors.pink, Colors.pinkAccent],
-      ),
-    },
-    {
-      'icon': Icons.notifications_outlined,
-      'title': 'การแจ้งเตือน',
-      'subtitle': 'ข้อความและการแจ้งเตือน',
-      'gradient': const LinearGradient(
-        colors: [Colors.orange, Colors.deepOrange],
-      ),
-    },
-    {
-      'icon': Icons.help_outline,
-      'title': 'ช่วยเหลือ',
-      'subtitle': 'คำถามที่พบบ่อย',
-      'gradient': const LinearGradient(
-        colors: [Colors.green, Colors.lightGreen],
-      ),
-    },
-    {
-      'icon': Icons.settings_outlined,
-      'title': 'ตั้งค่า',
-      'subtitle': 'การตั้งค่าบัญชีและแอป',
-      'gradient': const LinearGradient(
-        colors: [Color(0xFFC0C0C0), Color(0xFFE5E5E5)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    },
-  ];
+    );
+  }
+}
+
+class ProfileMenuItem {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  ProfileMenuItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 }

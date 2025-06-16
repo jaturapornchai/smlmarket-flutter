@@ -1,3 +1,5 @@
 {
-    "cmake.sourceDirectory": "C:/gif/smlmarket/smlmarket/linux"
+    "cmake.sourceDirectory": "C:/gif/smlmarket/smlmarket/linux",
+    "dart.flutterPlatform": "windows",
+    "dart.defaultDevice": "windows"
 }

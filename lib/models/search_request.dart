@@ -9,7 +9,7 @@ class SearchRequest extends Equatable {
   final int limit;
   final int offset;
 
-  const SearchRequest({required this.query, this.limit = 10, this.offset = 0});
+  const SearchRequest({required this.query, this.limit = 200, this.offset = 0});
 
   factory SearchRequest.fromJson(Map<String, dynamic> json) =>
       _$SearchRequestFromJson(json);

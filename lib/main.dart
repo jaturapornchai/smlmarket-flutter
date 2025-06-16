@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'blocs/navigation/navigation_bloc.dart';
 import 'blocs/search/search_bloc.dart';
 import 'repositories/product_repository.dart';
 import 'routes/app_router.dart';
@@ -16,13 +15,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<NavigationBloc>(create: (context) => NavigationBloc()),
-        BlocProvider<SearchBloc>(
-          create: (context) => SearchBloc(ProductRepository()),
-        ),
-      ],
+    return BlocProvider<SearchBloc>(
+      create: (context) => SearchBloc(ProductRepository()),
       child: MaterialApp.router(
         title: 'SML Market',
         theme: AppTheme.theme,

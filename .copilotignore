@@ -1,0 +1,46 @@
+# Configuration files
+README.md
+
+# Environment files
+.env*
+*.env
+
+# Generated files
+**/*.g.dart
+**/*.freezed.dart
+**/*.mocks.dart
+
+# Build outputs
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Documentation
+docs/
+*.md
+
+# Version control
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# Platform specific
+android/app/build.gradle
+ios/Runner.xcodeproj/
+windows/
+linux/
+macos/
+web/
+
+# Assets (if you don't want Copilot to suggest changes)
+assets/
+fonts/
+
+# Test files (optional - uncomment if you don't want suggestions in tests)
+# test/
+# **/*_test.dart

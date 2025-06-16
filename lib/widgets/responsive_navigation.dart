@@ -13,11 +13,10 @@ class ResponsiveNavigationWrapper extends StatelessWidget {
     required this.currentIndex,
     required this.onDestinationSelected,
   });
-
   @override
   Widget build(BuildContext context) {
-    final shouldUseRail = ResponsiveUtils.shouldUseRail(context);
-    final isWideScreen = ResponsiveUtils.isWideScreen(context);
+    final shouldUseRail = ResponsiveUtils.isDesktop(context);
+    final isWideScreen = ResponsiveUtils.isDesktop(context);
 
     if (shouldUseRail) {
       return Scaffold(

@@ -51,6 +51,9 @@ dependencies:
   # Beautiful UI packages - using only core Flutter
   flutter_staggered_animations: ^1.1.1
 
+  # Image loading for web compatibility
+  cached_network_image: ^3.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

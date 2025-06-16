@@ -1,205 +1,139 @@
-# smlmarket
+# SML Market - Shopee-Style E-commerce App
 
-A new Flutter project.
+## 📱 Project Description
+แอปพลิเคชัน E-commerce สไตล์ Shopee พัฒนาด้วย Flutter สำหรับระบบค้นหาสินค้าออนไลน์ ระบบตระกร้า และระบบสั่งซื้อสินค้า
 
-## Getting Started
+### 🚀 Supported Platforms
+- ✅ Android
+- ✅ iOS
+- ✅ Windows Desktop
+- ✅ macOS
+- ✅ Linux
+- ✅ Web Browser
 
-# SML Market - Flutter BLoC Product Search App
+## 🎯 Features
 
-A Flutter application that uses BLoC pattern with MultiBlocProvider for state management and provides a beautiful UI for product search using TF-IDF Vector Similarity API.
+### 👥 Customer Side
+- **Search**: ค้นหาสินค้าด้วยระบบค้นหาที่รวดเร็ว
+- **Product Grid**: แสดงสินค้าแบบ grid สไตล์ Shopee
+- **Infinite Scroll**: โหลดสินค้าเพิ่มเติมแบบไม่จำกัด
+- **Shopping Cart**: ระบบตระกร้าสินค้า
+- **Profile**: จัดการข้อมูลส่วนตัว
+- **Settings**: ตั้งค่าแอปพลิเคชัน
 
-## Features
+### 🛠️ Admin/Staff Side
+- **Dashboard**: หน้าแดชบอร์ดสำหรับจัดการ
+- **Product Management**: จัดการรายการสินค้า
+- **Order Management**: จัดการคำสั่งซื้อ
+- **Reports**: รายงานต่างๆ
+- **Settings**: ตั้งค่าระบบ
 
-- 🏠 **Beautiful Home Page**: Modern menu interface with gradient cards and intuitive navigation
-- 🔍 **Advanced Product Search**: AI-powered search using TF-IDF Vector Similarity
-- 📱 **Responsive Design**: Works on mobile, tablet, and web
-- 🎯 **BLoC Pattern**: Clean architecture with separated business logic
-- 🔄 **Infinite Loading**: Load more products as you scroll
-- 🌐 **API Integration**: RESTful API integration with proper error handling
+## 🏗️ Technology Stack
+- **Frontend**: Flutter 3.32.2 & Dart 3.8.1
+- **Backend API**: GoLang
+- **Database**: ClickHouse
+- **State Management**: BLoC Pattern
+- **Routing**: go_router
+- **HTTP**: http package
+- **Image Loading**: cached_network_image
 
-## Architecture
-
-This app follows the BLoC (Business Logic Component) pattern with the following structure:
-
-```
-lib/
-├── blocs/
-│   ├── navigation/
-│   │   ├── navigation_bloc.dart
-│   │   ├── navigation_event.dart
-│   │   └── navigation_state.dart
-│   └── search/
-│       ├── search_bloc.dart
-│       ├── search_event.dart
-│       └── search_state.dart
-├── models/
-│   ├── product.dart
-│   ├── search_request.dart
-│   └── search_response.dart
-├── pages/
-│   ├── home_page.dart
-│   ├── search_page.dart
-│   ├── profile_page.dart
-│   ├── settings_page.dart
-│   └── main_navigation_page.dart
-├── repositories/
-│   └── product_repository.dart
-└── main.dart
-```
-
-## API Integration
-
-The app integrates with the product search API at `http://192.168.2.36:8008/search` with the following features:
-
-### Search Endpoint
-```
-POST /search
-Content-Type: application/json
-
-{
-  "query": "oil",
-  "limit": 10,
-  "offset": 0
-}
+## 📦 Key Dependencies
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^8.1.3
+  bloc: ^8.1.2
+  http: ^1.1.0
+  json_annotation: ^4.8.1
+  equatable: ^2.0.5
+  go_router: ^14.2.7
+  flutter_staggered_animations: ^1.1.1
+  cached_network_image: ^3.3.1
 ```
 
-### Response Format
-```json
-{
-  "success": true,
-  "message": "Search completed successfully",
-  "data": {
-    "data": [
-      {
-        "id": "000123",
-        "name": "COIL OEM BENZ SPRINTER",
-        "similarity_score": 0.856,
-        "metadata": {
-          "code": "000123",
-          "unit": "ใบ",
-          "balance_qty": 2.0,
-          "supplier_code": "ซ034"
-        }
-      }
-    ],
-    "total_count": 150,
-    "query": "coil",
-    "duration_ms": 45.2
-  }
-}
-```
+## 🌐 API Endpoints
+- **Health Check**: `http://0.0.0.0:8008/health`
+- **API Base**: `http://0.0.0.0:8008/api`
+- **Search**: `http://0.0.0.0:8008/search`
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter SDK (3.8.1 or higher)
-- Dart SDK
-- VS Code or Android Studio
+- Flutter SDK 3.32.2+
+- Dart 3.8.1+
+- Git
 
 ### Installation
-
-1. **Clone the repository**
-   ```bash
-   cd /path/to/project
-   ```
-
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
-
-3. **Generate model files**
-   ```bash
-   flutter packages pub run build_runner build
-   ```
-
-4. **Run the app**
-   ```bash
-   # For web
-   flutter run -d web-server --web-port 8080
-   
-   # For mobile
-   flutter run
-   ```
-
-## Dependencies
-
-### Main Dependencies
-- `flutter_bloc`: ^8.1.3 - State management
-- `bloc`: ^8.1.2 - Core BLoC library
-- `http`: ^1.1.0 - HTTP requests
-- `json_annotation`: ^4.8.1 - JSON serialization annotations
-- `equatable`: ^2.0.5 - Value equality
-
-### Dev Dependencies
-- `json_serializable`: ^6.7.1 - JSON code generation
-- `build_runner`: ^2.4.7 - Code generation runner
-
-## Features Overview
-
-### 🏠 Home Page
-- Welcome header with user greeting
-- Beautiful gradient search card
-- Grid menu with modern card design
-- Quick navigation to search functionality
-
-### 🔍 Search Page
-- Real-time search with debouncing
-- Product cards showing similarity scores
-- Infinite scroll pagination
-- Loading states and error handling
-- Search result statistics
-
-### 📊 Product Information
-Each product card displays:
-- Product name and code
-- Similarity score percentage
-- Current stock quantity and unit
-- Supplier information
-
-## BLoC Implementation
-
-### NavigationBloc
-Manages app navigation state with events:
-- `NavigateToHome`
-- `NavigateToSearch`
-- `NavigateToProfile`
-- `NavigateToSettings`
-
-### SearchBloc
-Handles product search with events:
-- `SearchProductsEvent` - Perform new search
-- `LoadMoreProductsEvent` - Load additional results
-- `ClearSearchEvent` - Clear search results
-
-## Testing
-
-Run tests with:
 ```bash
-flutter test
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/smlmarket.git
+cd smlmarket
+
+# Install dependencies
+flutter pub get
+
+# Run on your preferred platform
+flutter run -d windows    # Windows Desktop
+flutter run -d chrome     # Web Browser
+flutter run               # Connected mobile device
 ```
 
-The project includes:
-- Unit tests for models
-- BLoC tests for state management
-- Widget tests for UI components
+### Building for Production
+```bash
+# Web (Release Mode recommended for web)
+flutter build web
 
-## API Configuration
+# Windows Desktop
+flutter build windows
 
-To change the API endpoint, modify the `baseUrl` in:
-```dart
-// lib/repositories/product_repository.dart
-static const String baseUrl = 'http://192.168.2.36:8008';
+# Android
+flutter build apk
 ```
 
-## Contributing
+## 📁 Project Structure
+```
+lib/
+├── main.dart
+├── blocs/search/          # BLoC for search functionality
+├── models/                # Data models
+├── pages/                 # UI screens
+├── repositories/          # Data layer
+├── routes/                # App routing
+├── services/              # API services
+├── theme/                 # App theming
+├── utils/                 # Utility functions
+└── widgets/               # Reusable UI components
+```
 
+## 🎨 Architecture
+- **Clean Architecture** with separation of concerns
+- **BLoC Pattern** for state management (search functionality only)
+- **Repository Pattern** for data abstraction
+- **Responsive Design** for multi-platform support
+
+## 🔧 Development Guidelines
+- ✅ Use async/await for API calls
+- ✅ BLoC only for search functionality
+- ✅ No unnecessary animations for performance
+- ✅ Cross-platform compatibility
+- ❌ No withOpacity (deprecated)
+- ❌ No packages that don't support all platforms
+
+## 🐛 Debugging
+- **Web Browser**: Use Release Mode only for optimal performance
+- **Desktop**: Debug mode available
+- **Mobile**: Debug mode available
+
+## 🤝 Contributing
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests for new functionality
+4. Test on multiple platforms
 5. Submit a pull request
 
-## License
-
+## 📄 License
 This project is licensed under the MIT License.
+
+## 📞 Support
+For support and questions, please open an issue on GitHub.

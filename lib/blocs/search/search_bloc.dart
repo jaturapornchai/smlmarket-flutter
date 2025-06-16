@@ -21,7 +21,6 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     SearchProductsEvent event,
     Emitter<SearchState> emit,
   ) async {
-    final stopwatch = Stopwatch()..start();
     developer.log(
       '🚀 Starting search process for query: "${event.query}"',
       name: 'SearchBloc',
@@ -38,16 +37,9 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         '🤖 Starting query enhancement with DeepSeek',
         name: 'SearchBloc',
       );
-      final enhanceStopwatch = Stopwatch()..start();
 
       final enhancedQuery = await _deepSeekService.enhanceSearchQuery(
         event.query,
-      );
-
-      enhanceStopwatch.stop();
-      developer.log(
-        '✨ Query enhanced in ${enhanceStopwatch.elapsedMilliseconds}ms: "${event.query}" → "${enhancedQuery}"',
-        name: 'SearchBloc',
       );
 
       // Then emit loading state with enhanced query
@@ -65,17 +57,13 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         name: 'SearchBloc',
       );
       final response = await _productRepository.searchProducts(request);
-
       if (response.success) {
-        final hasMoreData = response.data.data.length >= event.limit;
-        stopwatch.stop();
+        // Better logic: hasMoreData based on current products vs totalCount
+        final hasMoreData =
+            response.data.data.length < response.data.totalCount;
 
         developer.log(
-          '🎉 Search completed successfully in ${stopwatch.elapsedMilliseconds}ms',
-          name: 'SearchBloc',
-        );
-        developer.log(
-          '📈 Results: ${response.data.data.length} products, total: ${response.data.totalCount}, hasMore: $hasMoreData',
+          '📈 Initial search results: ${response.data.data.length} products, total available: ${response.data.totalCount}, hasMore: $hasMoreData',
           name: 'SearchBloc',
         );
 
@@ -98,13 +86,6 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         emit(SearchError(message: response.message));
       }
     } catch (e) {
-      stopwatch.stop();
-      developer.log(
-        '💥 Search failed after ${stopwatch.elapsedMilliseconds}ms',
-        name: 'SearchBloc',
-        error: e,
-        stackTrace: StackTrace.current,
-      );
       emit(SearchError(message: e.toString()));
     }
   }
@@ -131,22 +112,22 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         final request = SearchRequest(
           query:
               currentState.enhancedQuery, // Use enhanced query for consistency
-          limit: 50,
+          limit: event.limit,
           offset: event.offset,
         );
 
         developer.log(
-          '🔄 Fetching more products with offset ${event.offset}',
+          '🔄 Fetching more products with offset ${event.offset}, limit ${event.limit}',
           name: 'SearchBloc',
         );
         final response = await _productRepository.searchProducts(request);
-
         if (response.success) {
           final allProducts = [...currentState.products, ...response.data.data];
-          final hasMoreData = response.data.data.length >= 50;
+          // Better logic: hasMoreData based on total products loaded vs totalCount
+          final hasMoreData = allProducts.length < response.data.totalCount;
 
           developer.log(
-            '📦 Loaded ${response.data.data.length} more products, total now: ${allProducts.length}',
+            '📦 Loaded ${response.data.data.length} more products, total now: ${allProducts.length}/${response.data.totalCount}, hasMore: $hasMoreData',
             name: 'SearchBloc',
           );
 

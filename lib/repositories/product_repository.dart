@@ -7,13 +7,6 @@ import '../models/search_response.dart';
 class ProductRepository {
   static const String baseUrl = 'http://192.168.2.36:8008';
   Future<SearchResponse> searchProducts(SearchRequest request) async {
-    final stopwatch = Stopwatch()..start();
-    developer.log(
-      '🔍 Starting product search',
-      name: 'ProductRepository',
-      time: DateTime.now(),
-    );
-
     try {
       developer.log(
         '📤 Sending request to API: $baseUrl/search',
@@ -30,12 +23,6 @@ class ProductRepository {
         body: jsonEncode(request.toJson()),
       );
 
-      stopwatch.stop();
-      developer.log(
-        '⏱️ API response time: ${stopwatch.elapsedMilliseconds}ms',
-        name: 'ProductRepository',
-      );
-
       if (response.statusCode == 200) {
         developer.log(
           '✅ API response success (${response.statusCode})',
@@ -49,14 +36,6 @@ class ProductRepository {
         final jsonData = jsonDecode(response.body);
         final searchResponse = SearchResponse.fromJson(jsonData);
 
-        developer.log(
-          '🎯 Parsed ${searchResponse.data.data.length} products from ${searchResponse.data.totalCount} total',
-          name: 'ProductRepository',
-        );
-        developer.log(
-          '📈 SearchResponse: ${searchResponse.toString()}',
-          name: 'ProductRepository',
-        );
         return searchResponse;
       } else {
         developer.log(
@@ -67,13 +46,6 @@ class ProductRepository {
         throw Exception('Failed to search products: ${response.statusCode}');
       }
     } catch (e) {
-      stopwatch.stop();
-      developer.log(
-        '💥 Error in product search after ${stopwatch.elapsedMilliseconds}ms',
-        name: 'ProductRepository',
-        error: e,
-        stackTrace: StackTrace.current,
-      );
       throw Exception('Error searching products: $e');
     }
   }
