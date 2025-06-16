@@ -47,11 +47,7 @@ dependencies:
   # Equatable for value equality
   equatable: ^2.0.5
   # Go Router for navigation
-  go_router: ^14.2.7
-  # Beautiful UI packages - using only core Flutter
-  flutter_staggered_animations: ^1.1.1
-
-  # Image loading for web compatibility
+  go_router: ^14.2.7 # Image loading for web compatibility
   cached_network_image: ^3.3.1
 
 dev_dependencies:

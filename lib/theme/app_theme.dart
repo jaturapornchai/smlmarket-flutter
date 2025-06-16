@@ -51,7 +51,6 @@ class AppTheme {
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         surface: AppColors.surface,
-        background: AppColors.background,
       ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(
@@ -117,13 +116,15 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 8,
-          shadowColor: AppColors.primary.withOpacity(0.3),
+          shadowColor: const Color(
+            0x4D1976D2,
+          ), // AppColors.primary.withOpacity(0.3)
         ),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: const Color(0x1A000000), // Colors.black.withOpacity(0.1)
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       appBarTheme: AppBarTheme(

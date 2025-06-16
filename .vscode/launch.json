@@ -16,7 +16,11 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "debug",
-            "deviceId": "chrome"
+            "deviceId": "chrome",
+            "args": [
+                "--web-browser-flag",
+                "--disable-web-security"
+            ]
         },
         {
             "name": "Profile Windows",
@@ -24,6 +28,24 @@
             "type": "dart",
             "flutterMode": "profile",
             "deviceId": "windows"
+        },
+        {
+            "name": "Release Windows",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "deviceId": "windows"
+        },
+        {
+            "name": "Release Web",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "deviceId": "chrome",
+            "args": [
+                "--web-browser-flag",
+                "--disable-web-security"
+            ]
         }
     ]
 }

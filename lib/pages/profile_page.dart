@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui_components.dart';
 import '../widgets/responsive_layout.dart';
 import '../routes/navigation_helper.dart';
+import '../routes/app_routes.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -11,26 +13,7 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
+class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,7 +60,9 @@ class _ProfilePageState extends State<ProfilePage>
                         border: Border.all(color: Colors.white, width: 4),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: const Color(
+                              0x33000000,
+                            ), // Colors.black.withOpacity(0.2)
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -107,13 +92,13 @@ class _ProfilePageState extends State<ProfilePage>
                           ),
                     ),
 
-                    const SizedBox(height: AppSpacing.sm),
-
-                    // User Email
-                    Text(
+                    const SizedBox(height: AppSpacing.sm), // User Email
+                    const Text(
                       'user@example.com',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withOpacity(0.9),
+                      style: TextStyle(
+                        color: Color(
+                          0xE6FFFFFF,
+                        ), // Colors.white.withOpacity(0.9)
                       ),
                     ),
 
@@ -155,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage>
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: const Color(0x33FFFFFF), // Colors.white.withOpacity(0.2)
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -169,8 +154,8 @@ class _ProfilePageState extends State<ProfilePage>
           ),
           Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white.withOpacity(0.8),
+            style: const TextStyle(
+              color: Color(0xCCFFFFFF), // Colors.white.withOpacity(0.8)
             ),
           ),
         ],
@@ -216,6 +201,12 @@ class _ProfilePageState extends State<ProfilePage>
         subtitle: 'ปรับแต่งการใช้งาน',
         onTap: () => NavigationHelper.goToSettings(context),
       ),
+      ProfileMenuItem(
+        icon: Icons.admin_panel_settings_outlined,
+        title: 'โหมดพนักงาน',
+        subtitle: 'เข้าสู่ระบบจัดการ',
+        onTap: () => _switchToAdminMode(),
+      ),
     ];
 
     return GlassmorphismCard(
@@ -230,7 +221,7 @@ class _ProfilePageState extends State<ProfilePage>
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.1),
+          color: const Color(0x1A1976D2), // AppColors.primary.withOpacity(0.1)
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(item.icon, color: AppColors.primary, size: 24),
@@ -355,6 +346,30 @@ class _ProfilePageState extends State<ProfilePage>
               );
             },
             child: const Text('ออกจากระบบ'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _switchToAdminMode() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('เข้าสู่โหมดพนักงาน'),
+        content: const Text('คุณต้องการเข้าสู่ระบบจัดการหรือไม่?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ยกเลิก'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to admin dashboard
+              context.go(AppRoutes.dashboard);
+            },
+            child: const Text('เข้าสู่ระบบ'),
           ),
         ],
       ),

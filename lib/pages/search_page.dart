@@ -17,26 +17,15 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
-class _SearchPageState extends State<SearchPage>
-    with SingleTickerProviderStateMixin {
+class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
   String _currentQuery = '';
   bool _isLoadingMore = false;
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-    _animationController.forward();
   }
 
   void _onScroll() {
@@ -93,7 +82,6 @@ class _SearchPageState extends State<SearchPage>
   void dispose() {
     _searchController.dispose();
     _scrollController.dispose();
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -133,74 +121,71 @@ class _SearchPageState extends State<SearchPage>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            children: [
-              // Fixed search bar at the top
-              Container(
-                color: AppColors.background,
-                padding: const EdgeInsets.all(16.0),
-                child: _buildSearchBar(),
-              ),
-              // Content area
-              Expanded(
-                child: BlocListener<SearchBloc, SearchState>(
-                  listener: (context, state) {
+        child: Column(
+          children: [
+            // Fixed search bar at the top
+            Container(
+              color: AppColors.background,
+              padding: const EdgeInsets.all(16.0),
+              child: _buildSearchBar(),
+            ),
+            // Content area
+            Expanded(
+              child: BlocListener<SearchBloc, SearchState>(
+                listener: (context, state) {
+                  developer.log(
+                    '👂 BlocListener - State changed to: ${state.runtimeType}',
+                    name: 'SearchPage',
+                  );
+
+                  // Reset loading more flag when search completes, fails, or load more completes
+                  if (state is SearchSuccess) {
                     developer.log(
-                      '👂 BlocListener - State changed to: ${state.runtimeType}',
+                      '✅ SearchSuccess - Resetting isLoadingMore flag. Products count: ${state.products.length}',
                       name: 'SearchPage',
                     );
-
-                    // Reset loading more flag when search completes, fails, or load more completes
-                    if (state is SearchSuccess) {
-                      developer.log(
-                        '✅ SearchSuccess - Resetting isLoadingMore flag. Products count: ${state.products.length}',
-                        name: 'SearchPage',
-                      );
-                      setState(() {
-                        _isLoadingMore = false;
-                      });
-                    } else if (state is SearchError) {
-                      developer.log(
-                        '❌ SearchError - Resetting isLoadingMore flag. Error: ${state.message}',
-                        name: 'SearchPage',
-                      );
-                      setState(() {
-                        _isLoadingMore = false;
-                      });
+                    setState(() {
+                      _isLoadingMore = false;
+                    });
+                  } else if (state is SearchError) {
+                    developer.log(
+                      '❌ SearchError - Resetting isLoadingMore flag. Error: ${state.message}',
+                      name: 'SearchPage',
+                    );
+                    setState(() {
+                      _isLoadingMore = false;
+                    });
+                  } else if (state is SearchLoading) {
+                    developer.log(
+                      '🔄 SearchLoading - Resetting isLoadingMore flag for new search',
+                      name: 'SearchPage',
+                    );
+                    setState(() {
+                      _isLoadingMore = false;
+                    });
+                  }
+                },
+                child: BlocBuilder<SearchBloc, SearchState>(
+                  builder: (context, state) {
+                    if (state is SearchInitial) {
+                      return _buildEmptyState();
+                    } else if (state is SearchEnhancing) {
+                      return _buildEnhancingState(state);
                     } else if (state is SearchLoading) {
-                      developer.log(
-                        '🔄 SearchLoading - Resetting isLoadingMore flag for new search',
-                        name: 'SearchPage',
-                      );
-                      setState(() {
-                        _isLoadingMore = false;
-                      });
+                      return _buildLoadingState(state);
+                    } else if (state is SearchSuccess) {
+                      return _buildSuccessState(state);
+                    } else if (state is SearchLoadingMore) {
+                      return _buildLoadingMoreState(state);
+                    } else if (state is SearchError) {
+                      return _buildErrorState(state);
                     }
+                    return const Center(child: Text('Unknown state'));
                   },
-                  child: BlocBuilder<SearchBloc, SearchState>(
-                    builder: (context, state) {
-                      if (state is SearchInitial) {
-                        return _buildEmptyState();
-                      } else if (state is SearchEnhancing) {
-                        return _buildEnhancingState(state);
-                      } else if (state is SearchLoading) {
-                        return _buildLoadingState(state);
-                      } else if (state is SearchSuccess) {
-                        return _buildSuccessState(state);
-                      } else if (state is SearchLoadingMore) {
-                        return _buildLoadingMoreState(state);
-                      } else if (state is SearchError) {
-                        return _buildErrorState(state);
-                      }
-                      return const Center(child: Text('Unknown state'));
-                    },
-                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -323,16 +308,7 @@ class _SearchPageState extends State<SearchPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ShimmerLoading(
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE5E5E5),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
+          ShimmerLoading(width: 60, height: 60, borderRadius: 30),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'กำลังปรับปรุงคำค้นหา...',
@@ -356,15 +332,9 @@ class _SearchPageState extends State<SearchPage>
         return Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.md),
           child: ShimmerLoading(
-            child: GlassmorphismCard(
-              child: Container(
-                height: 120,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE5E5E5),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
+            width: double.infinity,
+            height: 120,
+            borderRadius: 16,
           ),
         );
       },
@@ -533,11 +503,7 @@ class _SearchPageState extends State<SearchPage>
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.xl),
-          GradientButton(
-            text: 'ลองใหม่',
-            onPressed: _performSearch,
-            icon: const Icon(Icons.refresh, size: 20, color: Colors.white),
-          ),
+          GradientButton(text: 'ลองใหม่', onPressed: _performSearch),
         ],
       ),
     );

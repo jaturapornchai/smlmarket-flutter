@@ -10,30 +10,12 @@ class SettingsPage extends StatefulWidget {
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+class _SettingsPageState extends State<SettingsPage> {
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
   bool _biometricEnabled = true;
   bool _locationEnabled = true;
   double _textSizeMultiplier = 1.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,8 +63,10 @@ class _SettingsPageState extends State<SettingsPage>
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       'ปรับแต่งการใช้งานแอปพลิเคชัน',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withOpacity(0.9),
+                      style: TextStyle(
+                        color: Color(
+                          0xE6FFFFFF,
+                        ), // Colors.white.withOpacity(0.9)
                       ),
                     ),
                   ],

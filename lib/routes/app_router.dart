@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../pages/home_page.dart';
 import '../pages/search_page.dart';
 import '../pages/profile_page.dart';
 import '../pages/settings_page.dart';
+import '../pages/history_page.dart';
+import '../pages/cart_page.dart';
+import '../pages/dashboard_page.dart';
+import '../pages/products_page.dart';
+import '../pages/orders_page.dart';
+import '../pages/reports_page.dart';
 import 'app_routes.dart';
 
 class AppRouter {
@@ -27,9 +32,14 @@ class AppRouter {
               builder: (context, state) => const SearchPage(),
             ),
             GoRoute(
-              path: AppRoutes.home,
-              name: AppRoutes.homeRoute,
-              builder: (context, state) => const HomePage(),
+              path: AppRoutes.cart,
+              name: AppRoutes.cartRoute,
+              builder: (context, state) => const CartPage(),
+            ),
+            GoRoute(
+              path: AppRoutes.history,
+              name: AppRoutes.historyRoute,
+              builder: (context, state) => const HistoryPage(),
             ),
             GoRoute(
               path: AppRoutes.profile,
@@ -43,6 +53,34 @@ class AppRouter {
             ),
           ],
         ),
+        // Admin/Staff shell route with admin navigation
+        ShellRoute(
+          builder: (context, state, child) {
+            return AdminNavigationShell(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: AppRoutes.dashboard,
+              name: AppRoutes.dashboardRoute,
+              builder: (context, state) => const DashboardPage(),
+            ),
+            GoRoute(
+              path: AppRoutes.products,
+              name: AppRoutes.productsRoute,
+              builder: (context, state) => const ProductsPage(),
+            ),
+            GoRoute(
+              path: AppRoutes.orders,
+              name: AppRoutes.ordersRoute,
+              builder: (context, state) => const OrdersPage(),
+            ),
+            GoRoute(
+              path: AppRoutes.reports,
+              name: AppRoutes.reportsRoute,
+              builder: (context, state) => const ReportsPage(),
+            ),
+          ],
+        ),
         // Additional routes that need to be outside the main shell
         GoRoute(
           path: '/product/:id',
@@ -51,11 +89,6 @@ class AppRouter {
             final productId = state.pathParameters['id']!;
             return ProductDetailPage(productId: productId);
           },
-        ),
-        GoRoute(
-          path: AppRoutes.cart,
-          name: AppRoutes.cartRoute,
-          builder: (context, state) => const CartPage(),
         ),
         GoRoute(
           path: AppRoutes.checkout,
@@ -100,13 +133,13 @@ class MainNavigationShell extends StatelessWidget {
     final location = GoRouterState.of(context).uri.toString();
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Color(0x1A9E9E9E), // Colors.grey.withOpacity(0.1)
             blurRadius: 10,
-            offset: const Offset(0, -3),
+            offset: Offset(0, -3),
           ),
         ],
       ),
@@ -127,9 +160,14 @@ class MainNavigationShell extends StatelessWidget {
             label: 'ค้นหา',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+            icon: Icon(Icons.shopping_cart_outlined),
+            activeIcon: Icon(Icons.shopping_cart),
+            label: 'ตระกร้าสินค้า',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history_outlined),
+            activeIcon: Icon(Icons.history),
+            label: 'ประวัติ',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
@@ -150,12 +188,14 @@ class MainNavigationShell extends StatelessWidget {
     switch (location) {
       case AppRoutes.search:
         return 0;
-      case AppRoutes.home:
+      case AppRoutes.cart:
         return 1;
-      case AppRoutes.profile:
+      case AppRoutes.history:
         return 2;
-      case AppRoutes.settings:
+      case AppRoutes.profile:
         return 3;
+      case AppRoutes.settings:
+        return 4;
       default:
         return 0;
     }
@@ -167,12 +207,15 @@ class MainNavigationShell extends StatelessWidget {
         context.go(AppRoutes.search);
         break;
       case 1:
-        context.go(AppRoutes.home);
+        context.go(AppRoutes.cart);
         break;
       case 2:
-        context.go(AppRoutes.profile);
+        context.go(AppRoutes.history);
         break;
       case 3:
+        context.go(AppRoutes.profile);
+        break;
+      case 4:
         context.go(AppRoutes.settings);
         break;
     }
@@ -190,18 +233,6 @@ class ProductDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('สินค้า $productId')),
       body: Center(child: Text('รายละเอียดสินค้า ID: $productId')),
-    );
-  }
-}
-
-class CartPage extends StatelessWidget {
-  const CartPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('ตรวจสอบคำสั่งซื้อ')),
-      body: const Center(child: Text('หน้าตะกร้าสินค้า')),
     );
   }
 }
@@ -251,5 +282,102 @@ class RegisterPage extends StatelessWidget {
       appBar: AppBar(title: const Text('สมัครสมาชิก')),
       body: const Center(child: Text('หน้าสมัครสมาชิก')),
     );
+  }
+}
+
+// Admin/Staff navigation shell
+class AdminNavigationShell extends StatelessWidget {
+  final Widget child;
+
+  const AdminNavigationShell({required this.child, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: child,
+      bottomNavigationBar: _buildAdminBottomNavigation(context),
+    );
+  }
+
+  Widget _buildAdminBottomNavigation(BuildContext context) {
+    final location = GoRouterState.of(context).uri.toString();
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x1A9E9E9E), // Colors.grey.withOpacity(0.1)
+            blurRadius: 10,
+            offset: Offset(0, -3),
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _getAdminCurrentIndex(location),
+        onTap: (index) => _onAdminTabSelected(context, index),
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.orange[600],
+        unselectedItemColor: Colors.grey[500],
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        elevation: 0,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory_outlined),
+            activeIcon: Icon(Icons.inventory),
+            label: 'รายการสินค้า',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long_outlined),
+            activeIcon: Icon(Icons.receipt_long),
+            label: 'คำสั่งซื้อ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart_outlined),
+            activeIcon: Icon(Icons.bar_chart),
+            label: 'รายงาน',
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _getAdminCurrentIndex(String location) {
+    switch (location) {
+      case AppRoutes.dashboard:
+        return 0;
+      case AppRoutes.products:
+        return 1;
+      case AppRoutes.orders:
+        return 2;
+      case AppRoutes.reports:
+        return 3;
+      default:
+        return 0;
+    }
+  }
+
+  void _onAdminTabSelected(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        context.go(AppRoutes.dashboard);
+        break;
+      case 1:
+        context.go(AppRoutes.products);
+        break;
+      case 2:
+        context.go(AppRoutes.orders);
+        break;
+      case 3:
+        context.go(AppRoutes.reports);
+        break;
+    }
   }
 }

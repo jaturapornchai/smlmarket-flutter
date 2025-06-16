@@ -51,18 +51,16 @@ class GlassmorphismCard extends StatelessWidget {
 }
 
 // Simple List Item without animation
-class AnimatedListItem extends StatelessWidget {
+class SimpleListItem extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final int index;
-  final Duration delay;
 
-  const AnimatedListItem({
+  const SimpleListItem({
     super.key,
     required this.child,
     this.onTap,
     this.index = 0,
-    this.delay = const Duration(milliseconds: 100),
   });
 
   @override
@@ -78,7 +76,7 @@ class AnimatedListItem extends StatelessWidget {
 }
 
 // Simple Gradient Button without animation
-class AnimatedGradientButton extends StatelessWidget {
+class SimpleGradientButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
@@ -89,7 +87,7 @@ class AnimatedGradientButton extends StatelessWidget {
   final TextStyle? textStyle;
   final Gradient? gradient;
 
-  const AnimatedGradientButton({
+  const SimpleGradientButton({
     super.key,
     required this.text,
     this.onPressed,
@@ -155,14 +153,14 @@ class AnimatedGradientButton extends StatelessWidget {
 }
 
 // Simple Progress Card without animation
-class AnimatedProgressCard extends StatelessWidget {
+class SimpleProgressCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final double progress;
   final Color? progressColor;
   final IconData? icon;
 
-  const AnimatedProgressCard({
+  const SimpleProgressCard({
     super.key,
     required this.title,
     required this.subtitle,
@@ -230,20 +228,20 @@ class AnimatedProgressCard extends StatelessWidget {
   }
 }
 
-// Simple Stat Card
-class StatCard extends StatelessWidget {
-  final String title;
-  final String value;
+// Simple Card with Icon
+class SimpleIconCard extends StatelessWidget {
   final IconData icon;
-  final Color color;
+  final String title;
+  final String subtitle;
+  final Color? iconColor;
   final VoidCallback? onTap;
 
-  const StatCard({
+  const SimpleIconCard({
     super.key,
-    required this.title,
-    required this.value,
     required this.icon,
-    required this.color,
+    required this.title,
+    required this.subtitle,
+    this.iconColor,
     this.onTap,
   });
 
@@ -251,102 +249,42 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassmorphismCard(
       onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withAlpha(51), // 20% opacity
+              color: (iconColor ?? AppColors.primary).withAlpha(
+                51,
+              ), // 20% opacity
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, size: 32, color: color),
+            child: Icon(icon, color: iconColor ?? AppColors.primary, size: 24),
           ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-            textAlign: TextAlign.center,
-          ),
+          if (onTap != null) Icon(Icons.chevron_right, color: Colors.grey[400]),
         ],
       ),
-    );
-  }
-}
-
-// Shimmer Loading
-class ShimmerLoading extends StatelessWidget {
-  final double width;
-  final double height;
-  final double borderRadius;
-
-  const ShimmerLoading({
-    super.key,
-    required this.width,
-    required this.height,
-    this.borderRadius = 8,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-    );
-  }
-}
-
-// Gradient Button
-class GradientButton extends StatelessWidget {
-  final String text;
-  final VoidCallback? onPressed;
-  final bool isLoading;
-  final EdgeInsetsGeometry padding;
-  final double borderRadius;
-  final double? width;
-  final double? height;
-  final TextStyle? textStyle;
-  final Gradient? gradient;
-
-  const GradientButton({
-    super.key,
-    required this.text,
-    this.onPressed,
-    this.isLoading = false,
-    this.padding = const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-    this.borderRadius = 12,
-    this.width,
-    this.height,
-    this.textStyle,
-    this.gradient,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedGradientButton(
-      text: text,
-      onPressed: onPressed,
-      isLoading: isLoading,
-      padding: padding,
-      borderRadius: borderRadius,
-      width: width,
-      height: height,
-      textStyle: textStyle,
-      gradient: gradient,
     );
   }
 }

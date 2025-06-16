@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../routes/navigation_helper.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui_components.dart';
@@ -54,8 +53,10 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       'ยินดีต้อนรับสู่ Dashboard 📊',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withOpacity(0.9),
+                      style: const TextStyle(
+                        color: Color(
+                          0xE6FFFFFF,
+                        ), // Colors.white.withOpacity(0.9)
                       ),
                     ),
                   ],
@@ -71,37 +72,21 @@ class HomePage extends StatelessWidget {
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
-
               const SizedBox(height: AppSpacing.lg),
 
-              AnimationLimiter(
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    childAspectRatio: 1.2,
-                    crossAxisSpacing: AppSpacing.md,
-                    mainAxisSpacing: AppSpacing.md,
-                  ),
-                  itemCount: _dashboardItems.length,
-                  itemBuilder: (context, index) {
-                    return AnimationConfiguration.staggeredGrid(
-                      position: index,
-                      duration: const Duration(milliseconds: 375),
-                      columnCount: crossAxisCount,
-                      child: SlideAnimation(
-                        verticalOffset: 50.0,
-                        child: FadeInAnimation(
-                          child: _buildDashboardCard(
-                            context,
-                            _dashboardItems[index],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: 1.2,
+                  crossAxisSpacing: AppSpacing.md,
+                  mainAxisSpacing: AppSpacing.md,
                 ),
+                itemCount: _dashboardItems.length,
+                itemBuilder: (context, index) {
+                  return _buildDashboardCard(context, _dashboardItems[index]);
+                },
               ),
             ],
           ),
@@ -119,7 +104,7 @@ class HomePage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: item.color.withOpacity(0.2),
+              color: const Color(0x331976D2), // Light blue with 20% opacity
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(item.icon, size: 32, color: item.color),

@@ -8,12 +8,8 @@ class NavigationHelper {
     context.go(AppRoutes.search);
   }
 
-  static void goToHome(BuildContext context) {
-    context.go(AppRoutes.home);
-  }
-
-  static void goToDashboard(BuildContext context) {
-    context.go(AppRoutes.home);
+  static void goToHistory(BuildContext context) {
+    context.go(AppRoutes.history);
   }
 
   static void goToProfile(BuildContext context) {

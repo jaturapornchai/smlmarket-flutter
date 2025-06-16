@@ -37,9 +37,14 @@ class ResponsiveNavigationWrapper extends StatelessWidget {
                   label: Text('ค้นหา'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.dashboard_outlined),
-                  selectedIcon: Icon(Icons.dashboard),
-                  label: Text('Dashboard'),
+                  icon: Icon(Icons.shopping_cart_outlined),
+                  selectedIcon: Icon(Icons.shopping_cart),
+                  label: Text('ตระกร้าสินค้า'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.history_outlined),
+                  selectedIcon: Icon(Icons.history),
+                  label: Text('ประวัติ'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.person_outline),
@@ -81,9 +86,14 @@ class ResponsiveNavigationWrapper extends StatelessWidget {
             label: 'ค้นหา',
           ),
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+            icon: Icon(Icons.shopping_cart_outlined),
+            selectedIcon: Icon(Icons.shopping_cart),
+            label: 'ตระกร้าสินค้า',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.history_outlined),
+            selectedIcon: Icon(Icons.history),
+            label: 'ประวัติ',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

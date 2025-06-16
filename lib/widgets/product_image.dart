@@ -34,18 +34,21 @@ class ProductImage extends StatelessWidget {
           borderRadius: const BorderRadius.all(Radius.circular(12)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: const Color(0x1F000000), // Colors.black.withOpacity(0.12)
               blurRadius: 2,
               offset: const Offset(0, 4),
               spreadRadius: 1,
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: const Color(0x0F000000), // Colors.black.withOpacity(0.06)
               blurRadius: 2,
               offset: const Offset(0, 2),
             ),
           ],
-          border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
+          border: Border.all(
+            color: const Color(0x80FFFFFF),
+            width: 1.5,
+          ), // Colors.white.withOpacity(0.5)
         ),
         child: Stack(
           children: [
@@ -53,10 +56,13 @@ class ProductImage extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(11),
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Colors.white.withOpacity(0.1), Colors.transparent],
+                    colors: [
+                      Color(0x1AFFFFFF),
+                      Colors.transparent,
+                    ], // Colors.white.withOpacity(0.1)
                   ),
                 ),
               ),
@@ -77,18 +83,21 @@ class ProductImage extends StatelessWidget {
         borderRadius: BorderRadius.circular(2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: const Color(0x1F000000), // Colors.black.withOpacity(0.12)
             blurRadius: 10,
             offset: const Offset(0, 4),
             spreadRadius: 1,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: const Color(0x0F000000), // Colors.black.withOpacity(0.06)
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.5),
+        border: Border.all(
+          color: const Color(0x66FFFFFF),
+          width: 1.5,
+        ), // Colors.white.withOpacity(0.4)
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(11),
@@ -106,7 +115,7 @@ class ProductImage extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.02),
+                      const Color(0x05000000), // Colors.black.withOpacity(0.02)
                     ],
                   ),
                 ),
