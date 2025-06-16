@@ -371,18 +371,24 @@ class _SearchPageState extends State<SearchPage> {
             builder: (context, constraints) {
               final screenWidth = constraints.crossAxisExtent;
               int crossAxisCount;
+              double childAspectRatio = 0.5;
 
-              // Responsive grid columns like Shopee
               if (screenWidth > 1200) {
                 crossAxisCount = 6;
+                childAspectRatio = 0.6; // Wider aspect ratio for larger screens
               } else if (screenWidth > 900) {
                 crossAxisCount = 5;
+                childAspectRatio = 0.55; // Slightly wider for medium screens
               } else if (screenWidth > 600) {
                 crossAxisCount = 4;
+                childAspectRatio =
+                    0.45; // Standard aspect ratio for smaller screens
               } else if (screenWidth > 400) {
                 crossAxisCount = 3;
+                childAspectRatio = 0.4;
               } else {
                 crossAxisCount = 2;
+                childAspectRatio = 0.4; // Wider aspect ratio for mobile
               }
 
               return SliverGrid(
@@ -390,7 +396,7 @@ class _SearchPageState extends State<SearchPage> {
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
-                  childAspectRatio: 0.75, // Shopee-like ratio
+                  childAspectRatio: childAspectRatio,
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -644,7 +650,7 @@ class _SearchPageState extends State<SearchPage> {
       child: GlassmorphismCard(
         padding: const EdgeInsets.all(0),
         onTap: () {
-          NavigationHelper.pushToProductDetail(context, product.metadata.code);
+          NavigationHelper.pushToProductDetail(context, product.code);
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -661,9 +667,7 @@ class _SearchPageState extends State<SearchPage> {
                   fit: BoxFit.cover,
                 ),
               ),
-            ),
-
-            // Product Info below
+            ), // Product Info below
             Expanded(
               flex: 2,
               child: Padding(
@@ -672,20 +676,19 @@ class _SearchPageState extends State<SearchPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    // Product name
+                    // Product name - แสดงเต็มไม่ตัด
                     Text(
                       product.name,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      // ไม่ตัดข้อความ ให้แสดงเต็ม
                     ),
                     const SizedBox(height: 4),
 
-                    // Product code
+                    // Product code/barcode
                     Text(
-                      'รหัส: ${product.metadata.code}',
+                      'รหัส: ${product.code}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -694,19 +697,29 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     const SizedBox(height: 4),
 
-                    // Stock info
-                    _buildInfoChip(
-                      Icons.inventory_outlined,
-                      'คงเหลือ: ${product.metadata.balanceQty.toStringAsFixed(0)} ${product.metadata.unit}',
-                    ),
+                    // Stock info - แยกกรณีสินค้าหมด
+                    product.balanceQty <= 0
+                        ? _buildOutOfStockChip()
+                        : _buildStockChip(product.balanceQty, product.unit),
+
                     const Spacer(),
 
-                    // Price at bottom
-                    Text(
-                      '₿${product.metadata.price.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
+                    // Price at bottom - เด่นชัด
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '₿${product.price.toStringAsFixed(2)}',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ],
@@ -719,25 +732,49 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
+  Widget _buildOutOfStockChip() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: const Color(0xFFE5E5E5).withValues(alpha: 0.3),
+        color: Colors.red.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.red, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.error_outline, size: 12, color: Colors.red),
+          const SizedBox(width: 4),
+          Text(
+            'สินค้าหมด',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontSize: 11,
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStockChip(double balanceQty, String unit) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: AppColors.textSecondary),
+          Icon(Icons.inventory_outlined, size: 12, color: Colors.green),
           const SizedBox(width: 4),
           Text(
-            text,
+            'คงเหลือ: ${balanceQty.toStringAsFixed(0)} $unit',
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(fontSize: 11),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            ).textTheme.bodySmall?.copyWith(fontSize: 11, color: Colors.green),
           ),
         ],
       ),
