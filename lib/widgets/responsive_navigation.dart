@@ -3,7 +3,7 @@ import '../theme/app_theme.dart';
 import '../utils/responsive_utils.dart';
 import '../services/auth_service.dart';
 import '../models/user.dart';
-import '../pages/login_page.dart';
+import '../pages/auth/login_page.dart';
 
 class ResponsiveNavigationWrapper extends StatefulWidget {
   final Widget child;
@@ -67,8 +67,7 @@ class _ResponsiveNavigationWrapperState
       selectedIcon: Icon(Icons.settings),
       label: 'ตั้งค่า',
     ),
-  ];
-  // เมนูสำหรับพนักงาน
+  ]; // เมนูสำหรับพนักงาน
   List<NavigationDestination> get _employeeDestinations => const [
     NavigationDestination(
       icon: Icon(Icons.person_search),
@@ -91,9 +90,9 @@ class _ResponsiveNavigationWrapperState
       label: 'Dashboard',
     ),
     NavigationDestination(
-      icon: Icon(Icons.receipt_long_outlined),
-      selectedIcon: Icon(Icons.receipt_long),
-      label: 'คำสั่งซื้อ',
+      icon: Icon(Icons.inventory_outlined),
+      selectedIcon: Icon(Icons.inventory),
+      label: 'รายการสินค้า',
     ),
   ];
 
@@ -118,6 +117,11 @@ class _ResponsiveNavigationWrapperState
       icon: Icon(Icons.group_outlined),
       selectedIcon: Icon(Icons.group),
       label: 'จัดการพนักงาน',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.storage_outlined),
+      selectedIcon: Icon(Icons.storage),
+      label: 'จัดการฐานข้อมูล',
     ),
     NavigationDestination(
       icon: Icon(Icons.analytics_outlined),
@@ -185,12 +189,11 @@ class _ResponsiveNavigationWrapperState
       label: Text('Dashboard'),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.receipt_long_outlined),
-      selectedIcon: Icon(Icons.receipt_long),
-      label: Text('คำสั่งซื้อ'),
+      icon: Icon(Icons.inventory_outlined),
+      selectedIcon: Icon(Icons.inventory),
+      label: Text('รายการสินค้า'),
     ),
   ];
-
   List<NavigationRailDestination> get _adminRailDestinations => const [
     NavigationRailDestination(
       icon: Icon(Icons.admin_panel_settings),
@@ -211,6 +214,11 @@ class _ResponsiveNavigationWrapperState
       icon: Icon(Icons.group_outlined),
       selectedIcon: Icon(Icons.group),
       label: Text('จัดการพนักงาน'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.storage_outlined),
+      selectedIcon: Icon(Icons.storage),
+      label: Text('จัดการฐานข้อมูล'),
     ),
     NavigationRailDestination(
       icon: Icon(Icons.analytics_outlined),
@@ -250,7 +258,7 @@ class _ResponsiveNavigationWrapperState
                   '${_currentUser!.roleDisplayName} • ${_currentUser!.email}',
                 ),
               ),
-              const Divider(),              // ปุ่มสลับ Role สำหรับทดสอบ
+              const Divider(), // ปุ่มสลับ Role สำหรับทดสอบ
               ListTile(
                 leading: Icon(Icons.swap_horiz, color: AppColors.primary),
                 title: Text(_getRoleSwitchText()),
@@ -271,12 +279,13 @@ class _ResponsiveNavigationWrapperState
             ],
           ],
         ),
-      ),    );
+      ),
+    );
   }
 
   String _getRoleSwitchText() {
     if (_currentUser == null) return '';
-    
+
     switch (_currentUser!.role) {
       case UserRole.customer:
         return 'สลับเป็น พนักงาน';

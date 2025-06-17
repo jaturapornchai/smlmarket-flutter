@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
 
 enum UserRole {
-  customer,    // 1. ลูกค้า
-  employee,    // 2. ผู้จัดการ และพนักงานขาย รวมเป็น พนักงาน
-  admin,       // 3. ผู้ดูแลระบบ
+  customer, // 1. ลูกค้า
+  employee, // 2. ผู้จัดการ และพนักงานขาย รวมเป็น พนักงาน
+  admin, // 3. ผู้ดูแลระบบ
 }
 
 class User extends Equatable {

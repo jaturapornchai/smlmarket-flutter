@@ -14,16 +14,39 @@ class AuthService {
   Stream<User?> get userStream => _userController.stream;
   User? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser?.isLoggedIn == true;
-
-  // สำหรับทดสอบ - hardcode user
+  // สำหรับทดสอบ - hardcode users
   Future<bool> login(String email) async {
-    if (email == 'smltest@gmail.com') {
-      _currentUser = const User(
-        email: 'smltest@gmail.com',
-        name: 'ผู้ใช้ทดสอบ',
-        role: UserRole.customer,
-        isLoggedIn: true,
-      );
+    User? user;
+
+    switch (email) {
+      case 'smltest@gmail.com':
+        user = const User(
+          email: 'smltest@gmail.com',
+          name: 'ลูกค้าทดสอบ',
+          role: UserRole.customer,
+          isLoggedIn: true,
+        );
+        break;
+      case 'smlstaff@gmail.com':
+        user = const User(
+          email: 'smlstaff@gmail.com',
+          name: 'พนักงานทดสอบ',
+          role: UserRole.employee,
+          isLoggedIn: true,
+        );
+        break;
+      case 'smladmin@gmail.com':
+        user = const User(
+          email: 'smladmin@gmail.com',
+          name: 'ผู้ดูแลระบบทดสอบ',
+          role: UserRole.admin,
+          isLoggedIn: true,
+        );
+        break;
+    }
+
+    if (user != null) {
+      _currentUser = user;
       _userController.add(_currentUser);
       return true;
     }
@@ -34,6 +57,7 @@ class AuthService {
     _currentUser = null;
     _userController.add(null);
   }
+
   // สำหรับทดสอบ - สลับ role (1,2,3)
   void switchRole() {
     if (_currentUser != null) {

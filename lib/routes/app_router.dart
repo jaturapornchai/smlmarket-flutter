@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../pages/search_page.dart';
-import '../pages/profile_page.dart';
-import '../pages/settings_page.dart';
-import '../pages/history_page.dart';
-import '../pages/cart_page.dart';
-import '../pages/dashboard_page.dart';
-import '../pages/products_page.dart';
-import '../pages/orders_page.dart';
-import '../pages/reports_page.dart';
+import '../pages/misc/search_page.dart';
+import '../pages/profile/profile_page.dart';
+import '../pages/settings/settings_page.dart';
+import '../pages/misc/history_page.dart';
+import '../pages/misc/cart_page.dart';
+import '../pages/dashboard/dashboard_page.dart';
+import '../pages/products/products_page.dart';
+import '../pages/orders/orders_page.dart';
+import '../pages/reports/reports_page.dart';
 import 'app_routes.dart';
 
 class AppRouter {

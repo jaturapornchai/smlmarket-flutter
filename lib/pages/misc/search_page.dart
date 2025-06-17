@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:developer' as developer;
-import '../blocs/search/search_bloc.dart';
-import '../blocs/search/search_event.dart';
-import '../blocs/search/search_state.dart';
-import '../models/product.dart';
-import '../routes/navigation_helper.dart';
-import '../theme/app_theme.dart';
-import '../widgets/ui_components.dart';
-import '../widgets/product_image.dart';
+import '../../blocs/search/search_bloc.dart';
+import '../../blocs/search/search_event.dart';
+import '../../blocs/search/search_state.dart';
+import '../../models/product.dart';
+import '../../routes/navigation_helper.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ui_components.dart';
+import '../../widgets/product_image.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -212,8 +212,10 @@ class _SearchPageState extends State<SearchPage> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
+                labelText: 'ค้นหาสินค้า เช่น oil, motor, coil...',
                 hintText: 'ค้นหาสินค้า เช่น oil, motor, coil...',
                 hintStyle: TextStyle(color: AppColors.textSecondary),
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
                 prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -375,14 +377,14 @@ class _SearchPageState extends State<SearchPage> {
 
               if (screenWidth > 1200) {
                 crossAxisCount = 6;
-                childAspectRatio = 0.6; // Wider aspect ratio for larger screens
+                childAspectRatio = 0.5; // Wider aspect ratio for larger screens
               } else if (screenWidth > 900) {
                 crossAxisCount = 5;
-                childAspectRatio = 0.55; // Slightly wider for medium screens
+                childAspectRatio = 0.5; // Slightly wider for medium screens
               } else if (screenWidth > 600) {
                 crossAxisCount = 4;
                 childAspectRatio =
-                    0.45; // Standard aspect ratio for smaller screens
+                    0.4; // Standard aspect ratio for smaller screens
               } else if (screenWidth > 400) {
                 crossAxisCount = 3;
                 childAspectRatio = 0.4;
@@ -682,7 +684,7 @@ class _SearchPageState extends State<SearchPage> {
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
-                      // ไม่ตัดข้อความ ให้แสดงเต็ม
+                      maxLines: 2,
                     ),
                     const SizedBox(height: 4),
 

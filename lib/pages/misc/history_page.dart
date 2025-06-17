@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../widgets/ui_components.dart';
-import '../widgets/responsive_layout.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ui_components.dart';
+import '../../widgets/responsive_layout.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
@@ -83,6 +83,7 @@ class HistoryPage extends StatelessWidget {
                           decoration: const InputDecoration(
                             labelText: 'สถานะ',
                             border: OutlineInputBorder(),
+                            floatingLabelBehavior: FloatingLabelBehavior.auto,
                           ),
                           items: const [
                             DropdownMenuItem(

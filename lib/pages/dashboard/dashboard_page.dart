@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../theme/app_theme.dart';
-import '../widgets/ui_components.dart';
-import '../widgets/responsive_layout.dart';
-import '../routes/app_routes.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ui_components.dart';
+import '../../widgets/responsive_layout.dart';
+import '../../routes/app_routes.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});

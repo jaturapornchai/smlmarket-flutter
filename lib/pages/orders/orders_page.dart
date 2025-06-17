@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../widgets/ui_components.dart';
-import '../widgets/responsive_layout.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ui_components.dart';
+import '../../widgets/responsive_layout.dart';
 
 class OrdersPage extends StatelessWidget {
   const OrdersPage({super.key});

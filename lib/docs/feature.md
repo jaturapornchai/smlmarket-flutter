@@ -15,7 +15,13 @@ Platform ที่รองรับ ได้แก่ Android,iOS,Windows,Web 
 
 แยกกันโดย สิทธิ์การเข้าถึงข้อมูล และการจัดการข้อมูล กำหนดโดย Role ของผู้ใช้ 
 ให้มีปุ่ม Login ในเมนูหลักของแอปพลิเคชัน 
-ขั้นตอนเป็นการ Dev หน้าจอ login ให้ กดปุ่ม Login user smltest@gmail.com 
+ขั้นตอนเป็นการ Dev หน้าจอ login ให้ กดปุ่ม 
+Login user (เพื่อทดสอบการทำงานของระบบ)
+smltest@gmail.com = ลูกค้า (1)
+smlstaff@gmail.com = พนักงาน (2)
+smladmin@gmail.com = ผู้ดูแลระบบ (3)
+
+
 ยังไม่ต้องทำหน้าจอ ลงทะเบียนผู้ใช้ใหม่
 ถ้ายังไม่ Login ให้แสดงปุ่ม Login ในเมนูหลักของแอปพลิเคชัน ถ้า Login แล้ว ให้แสดงชื่อผู้ใช้ และเมื่อกดอีกครั้ง ให้แสดงเมนู Logout
 เพื่อทดสอบ ให้เพิ่มปุ่ม สลับเปลี่ยน Role ของผู้ใช้ จาก ลูกค้า เป็น พนักงาน และจาก พนักงาน เป็น ลูกค้า และเป็นผู้ดูแลระบบ (1,2,3) เพื่อให้สามารถทดสอบการทำงานของระบบได้
@@ -81,7 +87,13 @@ Platform ที่รองรับ ได้แก่ Android,iOS,Windows,Web 
 ## API Endpoints:
 - Health Check: http://0.0.0.0:8008/health
 - API Base: http://0.0.0.0:8008/api
+- AI agent documentation: http://0.0.0.0:8008/guide
 - Search: http://0.0.0.0:8008/search
+- Database ClickHouse Select Command: http://0.0.0.0:8008/database/select
+- Database ClickHouse All Command: http://0.0.0.0:8008/database/command
+- Database ClickHouse get Table: http://0.0.0.0:8008/database/table
+- Image proxy endpoint (GET and HEAD): http://0.0.0.0:8008/imgproxy
+
 
 ## ต้องห้ามใช้
 - ห้ามใช้ package ที่ไม่จำเป็น
@@ -93,3 +105,4 @@ Platform ที่รองรับ ได้แก่ Android,iOS,Windows,Web 
 
 # Debugging 
 - ถ้าเป็น Web Browser ให้ใช้ ให้ Run แบบ Release Mode เท่านั้น
+

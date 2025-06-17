@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../widgets/product_image.dart';
-import '../services/cloudinary_service.dart';
+import '../../widgets/product_image.dart';
+import '../../services/cloudinary_service.dart';
 
 class ImageDebugPage extends StatelessWidget {
   const ImageDebugPage({super.key});

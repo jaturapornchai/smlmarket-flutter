@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../widgets/ui_components.dart';
-import '../widgets/responsive_layout.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ui_components.dart';
+import '../../widgets/responsive_layout.dart';
 
 class ProductsPage extends StatelessWidget {
   const ProductsPage({super.key});
@@ -76,7 +76,9 @@ class ProductsPage extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       decoration: InputDecoration(
+                        labelText: 'ค้นหาสินค้า...',
                         hintText: 'ค้นหาสินค้า...',
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),

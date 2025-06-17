@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../routes/navigation_helper.dart';
-import '../theme/app_theme.dart';
-import '../widgets/ui_components.dart';
-import '../utils/responsive_utils.dart';
-import '../widgets/responsive_layout.dart';
+import '../../routes/navigation_helper.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ui_components.dart';
+import '../../utils/responsive_utils.dart';
+import '../../widgets/responsive_layout.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});

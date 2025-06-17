@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
-import '../theme/app_theme.dart';
-import '../widgets/ui_components.dart';
+import '../../services/auth_service.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/ui_components.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,11 +14,10 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final AuthService _authService = AuthService();
   bool _isLoading = false;
-
   @override
   void initState() {
     super.initState();
-    // ใส่ email ทดสอบไว้เลย
+    // ใส่ email ทดสอบไว้เลย - ลูกค้า
     _emailController.text = 'smltest@gmail.com';
   }
 
@@ -64,6 +63,31 @@ class _LoginPageState extends State<LoginPage> {
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
     }
+  }
+
+  Widget _buildTestUserItem(String email, String role, IconData icon) {
+    return InkWell(
+      onTap: () {
+        _emailController.text = email;
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '$email - $role',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -117,7 +141,8 @@ class _LoginPageState extends State<LoginPage> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: 'อีเมล',
-                    hintText: 'smltest@gmail.com',
+                    hintText: 'เลือกจากผู้ใช้ทดสอบด้านล่าง',
+                    floatingLabelBehavior: FloatingLabelBehavior.auto,
                     prefixIcon: Icon(Icons.email, color: AppColors.primary),
                     border: InputBorder.none,
                   ),
@@ -134,15 +159,38 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: _isLoading ? null : _login,
                 ),
               ),
-
               const SizedBox(height: 16),
 
-              Text(
-                'สำหรับทดสอบ: ใช้ smltest@gmail.com',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-                textAlign: TextAlign.center,
+              // Test users info
+              GlassmorphismCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ผู้ใช้ทดสอบ:',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildTestUserItem(
+                      'smltest@gmail.com',
+                      'ลูกค้า (1)',
+                      Icons.person,
+                    ),
+                    _buildTestUserItem(
+                      'smlstaff@gmail.com',
+                      'พนักงาน (2)',
+                      Icons.work,
+                    ),
+                    _buildTestUserItem(
+                      'smladmin@gmail.com',
+                      'ผู้ดูแลระบบ (3)',
+                      Icons.admin_panel_settings,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

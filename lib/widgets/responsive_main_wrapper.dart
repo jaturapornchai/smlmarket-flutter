@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../pages/search_page.dart';
-import '../pages/home_page.dart';
-import '../pages/profile_page.dart';
-import '../pages/settings_page.dart';
+import '../pages/misc/search_page.dart';
+import '../pages/dashboard/home_page.dart';
+import '../pages/profile/profile_page.dart';
+import '../pages/settings/settings_page.dart';
 import '../widgets/responsive_navigation.dart';
 
 class ResponsiveMainWrapper extends StatefulWidget {
