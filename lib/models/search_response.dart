@@ -8,12 +8,12 @@ part 'search_response.g.dart';
 class SearchResponse extends Equatable {
   final bool success;
   final String message;
-  final SearchData data;
+  final SearchData? data;
 
   const SearchResponse({
     required this.success,
     required this.message,
-    required this.data,
+    this.data,
   });
 
   factory SearchResponse.fromJson(Map<String, dynamic> json) =>
@@ -26,7 +26,7 @@ class SearchResponse extends Equatable {
 
 @JsonSerializable()
 class SearchData extends Equatable {
-  final List<Product> data;
+  final List<Product>? data;
   @JsonKey(name: 'total_count')
   final int totalCount;
   final String query;
@@ -34,11 +34,14 @@ class SearchData extends Equatable {
   final double durationMs;
 
   const SearchData({
-    required this.data,
+    this.data,
     required this.totalCount,
     required this.query,
     required this.durationMs,
   });
+
+  // Helper getter to return empty list if data is null
+  List<Product> get products => data ?? [];
 
   factory SearchData.fromJson(Map<String, dynamic> json) =>
       _$SearchDataFromJson(json);

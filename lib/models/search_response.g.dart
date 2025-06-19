@@ -10,7 +10,9 @@ SearchResponse _$SearchResponseFromJson(Map<String, dynamic> json) =>
     SearchResponse(
       success: json['success'] as bool,
       message: json['message'] as String,
-      data: SearchData.fromJson(json['data'] as Map<String, dynamic>),
+      data: json['data'] == null
+          ? null
+          : SearchData.fromJson(json['data'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$SearchResponseToJson(SearchResponse instance) =>
@@ -21,8 +23,8 @@ Map<String, dynamic> _$SearchResponseToJson(SearchResponse instance) =>
     };
 
 SearchData _$SearchDataFromJson(Map<String, dynamic> json) => SearchData(
-  data: (json['data'] as List<dynamic>)
-      .map((e) => Product.fromJson(e as Map<String, dynamic>))
+  data: (json['data'] as List<dynamic>?)
+      ?.map((e) => Product.fromJson(e as Map<String, dynamic>))
       .toList(),
   totalCount: (json['total_count'] as num).toInt(),
   query: json['query'] as String,

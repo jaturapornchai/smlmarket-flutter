@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'lib/models/product.dart';
 import 'lib/models/search_response.dart';
 
 void main() {
@@ -33,29 +32,32 @@ void main() {
   try {
     final jsonData = jsonDecode(sampleJson);
     final response = SearchResponse.fromJson(jsonData);
-
     print('✅ Parsing successful!');
     print('Success: ${response.success}');
     print('Message: ${response.message}');
-    print('Total count: ${response.data.totalCount}');
-    print('Query: ${response.data.query}');
-    print('Duration: ${response.data.durationMs}ms');
+    print('Total count: ${response.data?.totalCount ?? 0}');
+    print('Query: ${response.data?.query ?? "N/A"}');
+    print('Duration: ${response.data?.durationMs ?? 0.0}ms');
 
-    final product = response.data.data.first;
-    print('\\nProduct details:');
-    print('ID: ${product.id}');
-    print('Name: ${product.name}');
-    print('Code: ${product.code}');
-    print('Price: ${product.price}');
-    print('Balance: ${product.balanceQty}');
-    print('Unit: ${product.unit}');
-    print('Priority: ${product.searchPriority}');
-    print('Similarity: ${product.similarityScore}');
+    if (response.data?.data?.isNotEmpty == true) {
+      final product = response.data!.data!.first;
+      print('\\nProduct details:');
+      print('ID: ${product.id}');
+      print('Name: ${product.name}');
+      print('Code: ${product.code}');
+      print('Price: ${product.price}');
+      print('Balance: ${product.balanceQty}');
+      print('Unit: ${product.unit}');
+      print('Priority: ${product.searchPriority}');
+      print('Similarity: ${product.similarityScore}');
 
-    // Test backward compatibility
-    print('\\nBackward compatibility:');
-    print('Metadata code: ${product.metadata.code}');
-    print('Metadata price: ${product.metadata.price}');
+      // Test backward compatibility
+      print('\\nBackward compatibility:');
+      print('Metadata code: ${product.metadata.code}');
+      print('Metadata price: ${product.metadata.price}');
+    } else {
+      print('\\nNo products found in response');
+    }
   } catch (e) {
     print('❌ Error parsing JSON: $e');
   }

@@ -19,6 +19,7 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
   Map<String, dynamic>? _healthStatus;
   Map<String, dynamic>? _customerStats;
   Map<String, dynamic>? _databaseInfo;
+  Map<String, dynamic>? _comprehensiveDbInfo;
   String? _errorMessage;
   String? _successMessage;
 
@@ -56,11 +57,12 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
     });
 
     try {
-      final databaseInfo = await _databaseService.getDatabaseInfo();
+      // ใช้ PostgreSQL เป็นหลัก
+      final tables = await _databaseService.scanDatabase();
       setState(() {
-        _databaseInfo = databaseInfo;
-        _tables = List<Map<String, dynamic>>.from(databaseInfo['tables'] ?? []);
-        _successMessage = 'สแกนฐานข้อมูลสำเร็จ พบ ${_tables.length} ตาราง';
+        _tables = tables;
+        _successMessage =
+            'สแกนฐานข้อมูล PostgreSQL สำเร็จ พบ ${_tables.length} ตาราง';
         _isLoading = false;
       });
     } catch (e) {
@@ -84,6 +86,45 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('สร้างตาราง customers สำเร็จ'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      await _scanDatabase(); // รีเฟรชรายการตาราง
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'เกิดข้อผิดพลาดในการสร้างตาราง: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  // เพิ่มฟังก์ชันสร้างตารางทั้งหมดใน PostgreSQL
+  Future<void> _createAllPostgreSQLTables() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    try {
+      final result = await _databaseService.createAllPostgreSQLTables();
+
+      setState(() {
+        _isLoading = false;
+        if (result['success'] == true) {
+          _successMessage =
+              'สร้างตารางทั้งหมดสำเร็จ: customers, carts, cart_items, coupons, coupon_usages, orders, order_items, order_status_history';
+        } else {
+          _errorMessage = result['message'] ?? 'เกิดข้อผิดพลาดในการสร้างตาราง';
+        }
+      });
+
+      if (mounted && result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('สร้างตารางทั้งหมดใน PostgreSQL สำเร็จ'),
             backgroundColor: Colors.green,
           ),
         );
@@ -127,197 +168,6 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
     } catch (e) {
       setState(() {
         _errorMessage = 'เกิดข้อผิดพลาดในการตรวจสอบตาราง: $e';
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _testProductSearch() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
-
-      final result = await _databaseService.searchProducts('laptop', limit: 5);
-
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('ผลการค้นหาสินค้า'),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('พบสินค้า: ${result['metadata']['total_found']} รายการ'),
-                  Text('เวลาค้นหา: ${result['metadata']['duration_ms']} ms'),
-                  const SizedBox(height: 16),
-                  if (result['data'] != null && result['data'].isNotEmpty) ...[
-                    const Text(
-                      'ตัวอย่างสินค้า:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    ...((result['data'] as List)
-                        .take(3)
-                        .map(
-                          (product) => Text(
-                            '• ${product['product_name']} (${product['product_code']})',
-                          ),
-                        )),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('ปิด'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'เกิดข้อผิดพลาดในการทดสอบค้นหา: $e';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _showQueryAnalyzer() {
-    final TextEditingController queryController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('วิเคราะห์ SQL Query'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: queryController,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'SQL Query',
-                  hintText: 'SELECT * FROM customers LIMIT 10',
-                  floatingLabelBehavior: FloatingLabelBehavior.auto,
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => _validateQuery(queryController.text),
-                    child: const Text('ตรวจสอบ Syntax'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () =>
-                        _analyzeQueryPerformance(queryController.text),
-                    child: const Text('วิเคราะห์ Performance'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('ปิด'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _validateQuery(String query) async {
-    if (query.trim().isEmpty) return;
-
-    try {
-      final result = await _databaseService.validateQuery(query);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message']),
-            backgroundColor: result['valid'] ? Colors.green : Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('เกิดข้อผิดพลาด: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _analyzeQueryPerformance(String query) async {
-    if (query.trim().isEmpty) return;
-
-    try {
-      setState(() {
-        _isLoading = true;
-      });
-
-      final result = await _databaseService.analyzeQuery(query);
-
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('ผลการวิเคราะห์ Performance'),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (result['success']) ...[
-                    Text(
-                      'เวลาดำเนินการ: ${result['performance']['execution_time_ms']} ms',
-                    ),
-                    Text(
-                      'จำนวนแถวที่ได้: ${result['performance']['rows_returned']} แถว',
-                    ),
-                    Text(
-                      'ความยาว Query: ${result['performance']['query_length']} ตัวอักษร',
-                    ),
-                  ] else ...[
-                    Text('เกิดข้อผิดพลาด: ${result['error']}'),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('ปิด'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'เกิดข้อผิดพลาดในการวิเคราะห์: $e';
-      });
-    } finally {
-      setState(() {
         _isLoading = false;
       });
     }
@@ -481,11 +331,11 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
 
                   // Success Message
                   if (_successMessage != null) _buildSuccessCard(),
-
                   const SizedBox(height: 20),
 
                   // Database Summary
-                  if (_databaseInfo != null) _buildDatabaseSummaryCard(),
+                  if (_comprehensiveDbInfo != null || _databaseInfo != null)
+                    _buildDatabaseSummaryCard(),
 
                   const SizedBox(height: 20),
 
@@ -535,15 +385,110 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
             ),
             _buildStatusRow(
               'API Base URL',
-              'http://localhost:8008',
+              'http://192.168.2.36:8008',
               Colors.grey,
             ),
-            if (_healthStatus!.containsKey('version'))
-              _buildStatusRow(
-                'ClickHouse Version',
-                _healthStatus!['version'].toString(),
-                Colors.blue,
-              ),
+
+            const SizedBox(height: 16),
+
+            // แสดงสถานะแต่ละฐานข้อมูล
+            Row(
+              children: [
+                // ClickHouse Status
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.speed, color: Colors.green, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'ClickHouse',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (_healthStatus!.containsKey('version'))
+                          Text(
+                            'Version: ${_healthStatus!['version'].toString()}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        Text(
+                          'Status: Connected',
+                          style: TextStyle(fontSize: 11, color: Colors.green),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // PostgreSQL Status
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.account_tree,
+                              color: Colors.blue,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'PostgreSQL',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Version: PostgreSQL 16.9',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        Text(
+                          'Status: Connected',
+                          style: TextStyle(fontSize: 11, color: Colors.blue),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
             if (_healthStatus!.containsKey('timestamp'))
               _buildStatusRow(
                 'Last Check',
@@ -602,11 +547,11 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _createCustomerTable,
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('สร้างตารางใหม่'),
+                  onPressed: _isLoading ? null : _createAllPostgreSQLTables,
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('สร้างตารางทั้งหมด'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -615,11 +560,11 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _verifyAndUpdateTables,
-                  icon: const Icon(Icons.verified),
-                  label: const Text('ตรวจสอบและอัปเดต'),
+                  onPressed: _isLoading ? null : _createCustomerTable,
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('สร้างตารางลูกค้า'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -634,11 +579,11 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _testProductSearch,
-                  icon: const Icon(Icons.search),
-                  label: const Text('ทดสอบค้นหาสินค้า'),
+                  onPressed: _isLoading ? null : _verifyAndUpdateTables,
+                  icon: const Icon(Icons.verified),
+                  label: const Text('ตรวจสอบตาราง'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
+                    backgroundColor: Colors.orange,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -647,33 +592,17 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _showQueryAnalyzer,
-                  icon: const Icon(Icons.analytics),
-                  label: const Text('วิเคราะห์ Query'),
+                  onPressed: _isLoading ? null : _scanDatabase,
+                  icon: const Icon(Icons.scanner),
+                  label: const Text('สแกนฐานข้อมูล'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
             ],
-          ),
-
-          const SizedBox(height: 12),
-
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _isLoading ? null : _scanDatabase,
-              icon: const Icon(Icons.scanner),
-              label: const Text('สแกนฐานข้อมูลทั้งหมด'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
           ),
         ],
       ),
@@ -717,54 +646,227 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
   }
 
   Widget _buildDatabaseSummaryCard() {
-    final summary = _databaseInfo!['summary'] as Map<String, dynamic>;
+    // ใช้ข้อมูลจาก comprehensive scan ถ้ามี หรือใช้ข้อมูลเก่า
+    Map<String, dynamic> summary;
 
-    return GlassmorphismCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'สรุปข้อมูลฐานข้อมูล',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
+    if (_comprehensiveDbInfo != null &&
+        _comprehensiveDbInfo!['success'] == true) {
+      summary = _comprehensiveDbInfo!['summary'] as Map<String, dynamic>;
 
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryTile(
-                  'ตารางทั้งหมด',
-                  '${summary['total_tables']} ตาราง',
-                  Icons.table_chart,
-                  Colors.blue,
+      return GlassmorphismCard(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'สรุปข้อมูลฐานข้อมูลทั้งหมด',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+
+            // สรุปรวม
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryTile(
+                    'ฐานข้อมูลทั้งหมด',
+                    '${summary['total_databases']} ฐาน',
+                    Icons.data_usage,
+                    Colors.indigo,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildSummaryTile(
-                  'แถวข้อมูลทั้งหมด',
-                  '${summary['total_rows']} แถว',
-                  Icons.storage,
-                  Colors.green,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildSummaryTile(
+                    'ตารางทั้งหมด',
+                    '${summary['total_tables']} ตาราง',
+                    Icons.table_chart,
+                    Colors.blue,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          _buildSummaryTile(
-            'ขนาดฐานข้อมูล',
-            '${summary['database_size_mb']} MB',
-            Icons.memory,
-            Colors.orange,
-          ),
-        ],
-      ),
-    );
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryTile(
+                    'แถวข้อมูลทั้งหมด',
+                    '${summary['total_rows']} แถว',
+                    Icons.storage,
+                    Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildSummaryTile(
+                    'ขนาดฐานข้อมูล',
+                    '${summary['total_size_mb']?.toStringAsFixed(2) ?? '0'} MB',
+                    Icons.memory,
+                    Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // แสดงรายละเอียดแต่ละฐานข้อมูล
+            Row(
+              children: [
+                // ClickHouse
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.speed, color: Colors.green, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'ClickHouse',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${_comprehensiveDbInfo!['clickhouse']['table_count']} ตาราง',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        Text(
+                          '${_comprehensiveDbInfo!['clickhouse']['total_rows']} แถว',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        Text(
+                          '${(_comprehensiveDbInfo!['clickhouse']['total_size_mb'] as num?)?.toStringAsFixed(2) ?? '0'} MB',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // PostgreSQL
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.account_tree,
+                              color: Colors.blue,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'PostgreSQL',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${_comprehensiveDbInfo!['postgresql']['table_count']} ตาราง',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        Text(
+                          '${_comprehensiveDbInfo!['postgresql']['total_rows']} แถว',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        Text(
+                          '${(_comprehensiveDbInfo!['postgresql']['total_size_mb'] as num?)?.toStringAsFixed(2) ?? '0'} MB',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } else if (_databaseInfo != null) {
+      // แสดงข้อมูลแบบเก่า (PostgreSQL เท่านั้น)
+      summary = _databaseInfo!['summary'] as Map<String, dynamic>;
+
+      return GlassmorphismCard(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'สรุปข้อมูลฐานข้อมูล (PostgreSQL)',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryTile(
+                    'ตารางทั้งหมด',
+                    '${summary['total_tables']} ตาราง',
+                    Icons.table_chart,
+                    Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildSummaryTile(
+                    'แถวข้อมูลทั้งหมด',
+                    '${summary['total_rows']} แถว',
+                    Icons.storage,
+                    Colors.green,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            _buildSummaryTile(
+              'ขนาดฐานข้อมูล',
+              '${summary['database_size_mb']} MB',
+              Icons.memory,
+              Colors.orange,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(); // ไม่แสดงอะไรถ้าไม่มีข้อมูล
   }
 
   Widget _buildCustomerStatsCard() {
@@ -908,96 +1010,501 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
               ),
             ),
           ] else ...[
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _tables.length,
-              itemBuilder: (context, index) {
-                final table = _tables[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    leading: Icon(Icons.table_chart, color: AppColors.primary),
-                    title: Text(
-                      table['name'] ?? table['table_name'] ?? 'Unknown',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    subtitle: Text(
-                      'Engine: ${table['engine'] ?? 'Unknown'} | '
-                      'Rows: ${table['rows'] ?? table['total_rows'] ?? '0'}',
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (table['rows'] != null ||
-                            table['total_rows'] != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '${table['rows'] ?? table['total_rows'] ?? 0}',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.info_outline),
-                          onPressed: () => _showTableDetails(table),
-                        ),
-                      ],
-                    ),
+            // แยกตารางตามประเภทฐานข้อมูล
+            ...(() {
+              final clickHouseTables = _tables
+                  .where((table) => table['database_type'] == 'ClickHouse')
+                  .toList();
+              final postgreSQLTables = _tables
+                  .where((table) => table['database_type'] == 'PostgreSQL')
+                  .toList();
+              final unknownTables = _tables
+                  .where((table) => table['database_type'] == null)
+                  .toList();
+
+              final widgets = <Widget>[];
+
+              // ClickHouse Tables
+              if (clickHouseTables.isNotEmpty) {
+                widgets.add(
+                  _buildDatabaseSection(
+                    'ClickHouse',
+                    Icons.speed,
+                    Colors.green,
+                    clickHouseTables,
                   ),
                 );
-              },
-            ),
+                widgets.add(const SizedBox(height: 16));
+              }
+
+              // PostgreSQL Tables
+              if (postgreSQLTables.isNotEmpty) {
+                widgets.add(
+                  _buildDatabaseSection(
+                    'PostgreSQL',
+                    Icons.account_tree,
+                    Colors.blue,
+                    postgreSQLTables,
+                  ),
+                );
+                widgets.add(const SizedBox(height: 16));
+              }
+
+              // Unknown Tables (fallback)
+              if (unknownTables.isNotEmpty) {
+                widgets.add(
+                  _buildDatabaseSection(
+                    'ไม่ระบุประเภท',
+                    Icons.help_outline,
+                    Colors.grey,
+                    unknownTables,
+                  ),
+                );
+              }
+
+              return widgets;
+            })(),
           ],
         ],
       ),
     );
   }
 
+  Widget _buildDatabaseSection(
+    String databaseName,
+    IconData icon,
+    Color color,
+    List<Map<String, dynamic>> tables,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                '$databaseName (${tables.length} ตาราง)',
+                style: TextStyle(fontWeight: FontWeight.bold, color: color),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: tables.length,
+          itemBuilder: (context, index) {
+            final table = tables[index];
+            return Card(
+              margin: const EdgeInsets.only(bottom: 4),
+              child: ListTile(
+                leading: Icon(Icons.table_chart, color: color),
+                title: Text(
+                  table['name'] ?? table['table_name'] ?? 'Unknown',
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Engine: ${table['engine'] ?? 'Unknown'}',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    Text(
+                      'Rows: ${_formatNumber(table['rows'] ?? table['total_rows'] ?? 0)} | '
+                      'Size: ${_formatSize(table['total_bytes'] ?? table['size_mb'])}',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        _formatNumber(
+                          table['rows'] ?? table['total_rows'] ?? 0,
+                        ),
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.info_outline),
+                      onPressed: () => _showTableDetails(table),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  String _formatNumber(dynamic number) {
+    if (number == null) return '0';
+    final num = int.tryParse(number.toString()) ?? 0;
+    if (num >= 1000000) {
+      return '${(num / 1000000).toStringAsFixed(1)}M';
+    } else if (num >= 1000) {
+      return '${(num / 1000).toStringAsFixed(1)}K';
+    }
+    return num.toString();
+  }
+
+  String _formatSize(dynamic size) {
+    if (size == null) return '0 B';
+
+    if (size is num) {
+      // ถ้าเป็น bytes
+      if (size > 1024 * 1024) {
+        return '${(size / 1024 / 1024).toStringAsFixed(1)} MB';
+      } else if (size > 1024) {
+        return '${(size / 1024).toStringAsFixed(1)} KB';
+      } else {
+        return '$size B';
+      }
+    }
+
+    return size.toString();
+  }
+
   void _showTableDetails(Map<String, dynamic> table) {
+    final tableName = table['name'] ?? table['table_name'] ?? 'Unknown';
+    final databaseType = table['database_type'];
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('รายละเอียดตาราง ${table['name'] ?? table['table_name']}'),
-        content: SingleChildScrollView(
+        title: Row(
+          children: [
+            Icon(
+              databaseType == 'ClickHouse' ? Icons.speed : Icons.account_tree,
+              color: databaseType == 'ClickHouse' ? Colors.green : Colors.blue,
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: Text('รายละเอียดตาราง $tableName')),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 600, // เพิ่มความสูงเพื่อให้พอดีกับตาราง fields
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDetailRow(
-                'ชื่อตาราง',
-                table['name'] ?? table['table_name'] ?? 'Unknown',
-              ),
-              _buildDetailRow('Engine', table['engine'] ?? 'Unknown'),
-              _buildDetailRow(
-                'จำนวนแถว',
-                (table['rows'] ?? table['total_rows'] ?? 0).toString(),
-              ),
-              if (table['total_bytes'] != null)
-                _buildDetailRow(
-                  'ขนาดข้อมูล (bytes)',
-                  table['total_bytes'].toString(),
+              // ข้อมูลพื้นฐาน
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color:
+                      (databaseType == 'ClickHouse'
+                              ? Colors.green
+                              : Colors.blue)
+                          .withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              if (table['metadata_modification_time'] != null)
-                _buildDetailRow(
-                  'วันที่แก้ไข',
-                  table['metadata_modification_time'].toString(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDetailRow('ชื่อตาราง', tableName),
+                    _buildDetailRow('ฐานข้อมูล', databaseType ?? 'Unknown'),
+                    _buildDetailRow('Engine', table['engine'] ?? 'Unknown'),
+                    _buildDetailRow(
+                      'จำนวนแถว',
+                      _formatNumber(table['rows'] ?? table['total_rows'] ?? 0),
+                    ),
+                    if (table['total_bytes'] != null ||
+                        table['size_mb'] != null)
+                      _buildDetailRow(
+                        'ขนาดข้อมูล',
+                        _formatSize(table['total_bytes'] ?? table['size_mb']),
+                      ),
+                    if (table['metadata_modification_time'] != null)
+                      _buildDetailRow(
+                        'วันที่แก้ไข',
+                        table['metadata_modification_time']
+                            .toString()
+                            .substring(0, 19),
+                      ),
+                    if (table['comment'] != null &&
+                        table['comment'].toString().isNotEmpty)
+                      _buildDetailRow('คำอธิบาย', table['comment'].toString()),
+                  ],
                 ),
-              if (table['comment'] != null &&
-                  table['comment'].toString().isNotEmpty)
-                _buildDetailRow('คำอธิบาย', table['comment'].toString()),
+              ),
+
+              const SizedBox(height: 16),
+
+              // แสดงข้อมูล Fields โดยตรง
+              Text(
+                'Fields ของตาราง',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: databaseType == 'ClickHouse'
+                      ? Colors.green
+                      : Colors.blue,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // ตาราง Fields
+              Expanded(
+                child: FutureBuilder<Map<String, dynamic>>(
+                  future: _getTableFieldsData(tableName, databaseType),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text('กำลังโหลดข้อมูล fields...'),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error, color: Colors.red, size: 48),
+                            const SizedBox(height: 16),
+                            Text(
+                              'ไม่สามารถโหลดข้อมูล fields ได้',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                            Text(
+                              snapshot.error.toString(),
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (!snapshot.hasData) {
+                      return const Center(child: Text('ไม่พบข้อมูล fields'));
+                    }
+
+                    final fieldsData = snapshot.data!;
+                    final fields = fieldsData['fields'] as List;
+
+                    if (fields.isEmpty) {
+                      return const Center(
+                        child: Text('ไม่พบ fields ในตารางนี้'),
+                      );
+                    }
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'จำนวน Fields: ${fields.length}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // ตารางแสดง Fields
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                // Header ของตาราง
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        (databaseType == 'ClickHouse'
+                                                ? Colors.green
+                                                : Colors.blue)
+                                            .withOpacity(0.1),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(8),
+                                      topRight: Radius.circular(8),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          'Field Name',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: databaseType == 'ClickHouse'
+                                                ? Colors.green
+                                                : Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          'Type',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: databaseType == 'ClickHouse'
+                                                ? Colors.green
+                                                : Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 1,
+                                        child: Text(
+                                          'Nullable',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: databaseType == 'ClickHouse'
+                                                ? Colors.green
+                                                : Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          'Default',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: databaseType == 'ClickHouse'
+                                                ? Colors.green
+                                                : Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // ข้อมูล Fields
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: fields.length,
+                                    itemBuilder: (context, index) {
+                                      final field = fields[index];
+                                      final isEven = index % 2 == 0;
+
+                                      return Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: isEven
+                                              ? Colors.grey[50]
+                                              : Colors.white,
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: Colors.grey[200]!,
+                                              width: 0.5,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 3,
+                                              child: Text(
+                                                field['name'] ??
+                                                    field['column_name'] ??
+                                                    'Unknown',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                field['type'] ??
+                                                    field['data_type'] ??
+                                                    'Unknown',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 1,
+                                              child: Text(
+                                                field['is_nullable']
+                                                        ?.toString() ??
+                                                    '-',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                (field['column_default']
+                                                            ?.toString()
+                                                            .isNotEmpty ==
+                                                        true)
+                                                    ? field['column_default']
+                                                          .toString()
+                                                    : '-',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[600],
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -1006,8 +1513,7 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('ปิด'),
           ),
-          if (table['name'] == 'customers' ||
-              table['table_name'] == 'customers')
+          if (tableName == 'customers')
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
@@ -1018,6 +1524,18 @@ class _DatabaseManagementPageState extends State<DatabaseManagementPage> {
         ],
       ),
     );
+  }
+
+  // ฟังก์ชันสำหรับดึงข้อมูล fields ของตาราง
+  Future<Map<String, dynamic>> _getTableFieldsData(
+    String tableName,
+    String? databaseType,
+  ) async {
+    if (databaseType == 'ClickHouse') {
+      return await _databaseService.getClickHouseTableFields(tableName);
+    } else {
+      return await _databaseService.getPostgreSQLTableFields(tableName);
+    }
   }
 
   Widget _buildDetailRow(String label, String value) {

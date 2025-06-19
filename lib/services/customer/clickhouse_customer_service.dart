@@ -4,32 +4,30 @@ import '../database_service.dart';
 class ClickHouseCustomerService {
   final DatabaseService _databaseService = DatabaseService();
 
-  // สร้างตาราง customers ใน ClickHouse
+  // สร้างตาราง customers ใน PostgreSQL
   Future<bool> createCustomerTable() async {
     try {
       const String createTableCommand = '''
         CREATE TABLE IF NOT EXISTS customers (
-          customer_id UInt32 DEFAULT 0,
-          customer_type String DEFAULT 'individual',
-          tax_id String,
-          title String DEFAULT '',
-          first_name String DEFAULT '',
-          last_name String DEFAULT '',
-          company_name String DEFAULT '',
-          address_line1 String,
-          address_line2 String DEFAULT '',
-          subdistrict String DEFAULT '',
-          district String,
-          province String,
-          postal_code String,
-          phone String DEFAULT '',
-          email String,
-          status String DEFAULT 'active',
-          created_at DateTime DEFAULT now(),
-          updated_at DateTime DEFAULT now()
-        ) ENGINE = MergeTree()
-        ORDER BY customer_id
-        SETTINGS index_granularity = 8192
+          customer_id SERIAL PRIMARY KEY,
+          customer_type VARCHAR(50) DEFAULT 'individual',
+          tax_id VARCHAR(20),
+          title VARCHAR(20) DEFAULT '',
+          first_name VARCHAR(100) DEFAULT '',
+          last_name VARCHAR(100) DEFAULT '',
+          company_name VARCHAR(200) DEFAULT '',
+          address_line1 TEXT,
+          address_line2 TEXT DEFAULT '',
+          subdistrict VARCHAR(100) DEFAULT '',
+          district VARCHAR(100),
+          province VARCHAR(100),
+          postal_code VARCHAR(10),
+          phone VARCHAR(20) DEFAULT '',
+          email VARCHAR(100),
+          status VARCHAR(20) DEFAULT 'active',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
       ''';
 
       await _databaseService.executeCommand(createTableCommand);
@@ -83,10 +81,9 @@ class ClickHouseCustomerService {
           ${customer.isLineConnected ? 'true' : 'false'},
           ${customer.lineConnectedAt != null ? "'${customer.lineConnectedAt!.toIso8601String()}'" : 'NULL'},
           ${customer.isVerified ? 'true' : 'false'},
-          ${customer.verifiedAt != null ? "'${customer.verifiedAt!.toIso8601String()}'" : 'NULL'},
-          '${_escapeString(customer.notes ?? '')}',
-          now(),
-          now()
+          ${customer.verifiedAt != null ? "'${customer.verifiedAt!.toIso8601String()}'" : 'NULL'},          '${_escapeString(customer.notes ?? '')}',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
         )
       ''';
       await _databaseService.executeCommand(query);
@@ -109,7 +106,7 @@ class ClickHouseCustomerService {
     try {
       final query =
           '''
-        ALTER TABLE customers UPDATE
+        UPDATE customers SET
           customer_type = '${customer.customerType == CustomerType.individual ? 'individual' : 'company'}',
           tax_id = '${_escapeString(customer.taxId)}',
           title = '${_escapeString(customer.title ?? '')}',
@@ -130,9 +127,8 @@ class ClickHouseCustomerService {
           is_line_connected = ${customer.isLineConnected ? 'true' : 'false'},
           line_connected_at = ${customer.lineConnectedAt != null ? "'${customer.lineConnectedAt!.toIso8601String()}'" : 'NULL'},
           is_verified = ${customer.isVerified ? 'true' : 'false'},
-          verified_at = ${customer.verifiedAt != null ? "'${customer.verifiedAt!.toIso8601String()}'" : 'NULL'},
-          notes = '${_escapeString(customer.notes ?? '')}',
-          updated_at = now()
+          verified_at = ${customer.verifiedAt != null ? "'${customer.verifiedAt!.toIso8601String()}'" : 'NULL'},          notes = '${_escapeString(customer.notes ?? '')}',
+          updated_at = CURRENT_TIMESTAMP
         WHERE customer_id = ${customer.customerId}
       ''';
 
@@ -252,9 +248,9 @@ class ClickHouseCustomerService {
   Future<bool> deleteCustomer(int customerId) async {
     try {
       await _databaseService.executeCommand('''
-        ALTER TABLE customers UPDATE
+        UPDATE customers SET
           status = 'inactive',
-          updated_at = now()
+          updated_at = CURRENT_TIMESTAMP
         WHERE customer_id = $customerId
       ''');
       return true;
@@ -297,7 +293,7 @@ class ClickHouseCustomerService {
     }
   }
 
-  // แปลงข้อมูลจาก ClickHouse เป็น Customer object
+  // แปลงข้อมูลจาก PostgreSQL เป็น Customer object
   Customer _mapToCustomer(Map<String, dynamic> data) {
     return Customer(
       customerId: data['customer_id']?.toInt(),

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/app_theme.dart';
+import '../../blocs/cart/cart_bloc.dart';
+import '../../blocs/cart/cart_event.dart';
+import '../../blocs/cart/cart_state.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -9,27 +13,14 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  final List<Map<String, dynamic>> _cartItems = [
-    {
-      'id': '1',
-      'name': 'สินค้าตัวอย่าง 1',
-      'price': 150.00,
-      'quantity': 2,
-      'image': 'https://picsum.photos/100/100?random=1',
-    },
-    {
-      'id': '2',
-      'name': 'สินค้าตัวอย่าง 2',
-      'price': 299.00,
-      'quantity': 1,
-      'image': 'https://picsum.photos/100/100?random=2',
-    },
-  ];
-
-  double get _totalPrice {
-    return _cartItems.fold(
-      0.0,
-      (sum, item) => sum + (item['price'] * item['quantity']),
+  @override
+  void initState() {
+    super.initState();
+    // โหลดข้อมูลตระกร้าเมื่อเริ่มต้น
+    context.read<CartBloc>().add(
+      LoadCartEvent(
+        sessionId: 'session_${DateTime.now().millisecondsSinceEpoch}',
+      ),
     );
   }
 
@@ -45,13 +36,57 @@ class _CartPageState extends State<CartPage> {
         backgroundColor: AppColors.primary,
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _cartItems.isEmpty ? _buildEmptyCart() : _buildCartList(),
-          ),
-          if (_cartItems.isNotEmpty) _buildSummarySection(),
-        ],
+      body: BlocBuilder<CartBloc, CartState>(
+        builder: (context, state) {
+          if (state is CartLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is CartError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'เกิดข้อผิดพลาด: ${state.message}',
+                    style: const TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<CartBloc>().add(
+                        LoadCartEvent(
+                          sessionId:
+                              'session_${DateTime.now().millisecondsSinceEpoch}',
+                        ),
+                      );
+                    },
+                    child: const Text('ลองใหม่'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (state is CartEmpty ||
+              (state is CartLoaded && state.items.isEmpty)) {
+            return _buildEmptyCart();
+          }
+
+          if (state is CartLoaded) {
+            return Column(
+              children: [
+                Expanded(child: _buildCartList(state.items)),
+                _buildSummarySection(state.totalAmount),
+              ],
+            );
+          }
+
+          return _buildEmptyCart();
+        },
       ),
     );
   }
@@ -85,18 +120,18 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildCartList() {
+  Widget _buildCartList(List<CartItem> cartItems) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _cartItems.length,
+      itemCount: cartItems.length,
       itemBuilder: (context, index) {
-        final item = _cartItems[index];
+        final item = cartItems[index];
         return _buildCartItem(item, index);
       },
     );
   }
 
-  Widget _buildCartItem(Map<String, dynamic> item, int index) {
+  Widget _buildCartItem(CartItem item, int index) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -108,19 +143,11 @@ class _CartPageState extends State<CartPage> {
             // Product Image
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                item['image'],
+              child: Container(
                 width: 80,
                 height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 80,
-                    height: 80,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.image),
-                  );
-                },
+                color: Colors.grey[300],
+                child: const Icon(Icons.shopping_bag, size: 40),
               ),
             ),
             const SizedBox(width: 12),
@@ -131,7 +158,7 @@ class _CartPageState extends State<CartPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item['name'],
+                    item.productName,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -141,7 +168,7 @@ class _CartPageState extends State<CartPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '฿${item['price'].toStringAsFixed(2)}',
+                    '฿${item.unitPrice.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -158,7 +185,8 @@ class _CartPageState extends State<CartPage> {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () => _updateQuantity(index, false),
+                      onPressed: () =>
+                          _updateQuantity(item.cartItemId, item.quantity - 1),
                       icon: const Icon(Icons.remove_circle_outline),
                       constraints: const BoxConstraints(
                         minWidth: 32,
@@ -166,14 +194,15 @@ class _CartPageState extends State<CartPage> {
                       ),
                     ),
                     Text(
-                      item['quantity'].toString(),
+                      item.quantity.toString(),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     IconButton(
-                      onPressed: () => _updateQuantity(index, true),
+                      onPressed: () =>
+                          _updateQuantity(item.cartItemId, item.quantity + 1),
                       icon: const Icon(Icons.add_circle_outline),
                       constraints: const BoxConstraints(
                         minWidth: 32,
@@ -183,7 +212,7 @@ class _CartPageState extends State<CartPage> {
                   ],
                 ),
                 TextButton(
-                  onPressed: () => _removeItem(index),
+                  onPressed: () => _removeItem(item.cartItemId),
                   child: const Text('ลบ', style: TextStyle(color: Colors.red)),
                 ),
               ],
@@ -194,7 +223,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildSummarySection() {
+  Widget _buildSummarySection(double totalAmount) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -217,7 +246,7 @@ class _CartPageState extends State<CartPage> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               Text(
-                '฿${_totalPrice.toStringAsFixed(2)}',
+                '฿${totalAmount.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -250,22 +279,19 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  void _updateQuantity(int index, bool increase) {
-    setState(() {
-      if (increase) {
-        _cartItems[index]['quantity']++;
-      } else {
-        if (_cartItems[index]['quantity'] > 1) {
-          _cartItems[index]['quantity']--;
-        }
-      }
-    });
+  void _updateQuantity(String cartItemId, int newQuantity) {
+    if (newQuantity <= 0) {
+      _removeItem(cartItemId);
+      return;
+    }
+
+    context.read<CartBloc>().add(
+      UpdateCartItemEvent(cartItemId: cartItemId, quantity: newQuantity),
+    );
   }
 
-  void _removeItem(int index) {
-    setState(() {
-      _cartItems.removeAt(index);
-    });
+  void _removeItem(String cartItemId) {
+    context.read<CartBloc>().add(RemoveFromCartEvent(cartItemId: cartItemId));
   }
 
   void _checkout() {

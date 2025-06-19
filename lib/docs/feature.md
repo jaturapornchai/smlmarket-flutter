@@ -82,17 +82,17 @@ smladmin@gmail.com = ผู้ดูแลระบบ (3)
 - ใช้ package ที่มีการอัพเดทล่าสุดเสมอ
 - ไม่ต้องสร้างไฟล์สรุปการทำงานของโปรเจค
 - รูปภาพที่เป็น url link จาก internet ให้แสดงผลได้
-- ข้อมูลที่เกิดขึ้นในโปรเจคนี้ ไม่ต้องมีการเก็บข้อมูลในเครื่อง ให้เก็บข้อมูลในฐานข้อมูล ClickHouse ผ่าน API เท่านั้น เพื่อให้สามารถทำงานหลายเครื่องได้ ข้อมูลเชื่อมต่อกัน ระหว่างเครื่องได้
+- ข้อมูลที่เกิดขึ้นในโปรเจคนี้ ไม่ต้องมีการเก็บข้อมูลในเครื่อง ให้เก็บข้อมูลในฐานข้อมูล PostgreSQL ผ่าน API เท่านั้น เพื่อให้สามารถทำงานหลายเครื่องได้ ข้อมูลเชื่อมต่อกัน ระหว่างเครื่องได้
 
 ## API Endpoints:
-- Health Check: http://0.0.0.0:8008/health
-- API Base: http://0.0.0.0:8008/api
-- AI agent documentation: http://0.0.0.0:8008/guide
-- Search: http://0.0.0.0:8008/search
-- Database ClickHouse Select Command: http://0.0.0.0:8008/database/select
-- Database ClickHouse All Command: http://0.0.0.0:8008/database/command
-- Database ClickHouse get Table: http://0.0.0.0:8008/database/table
-- Image proxy endpoint (GET and HEAD): http://0.0.0.0:8008/imgproxy
+- Health Check: http://192.168.2.36:8008/v1/health
+- API Base: http://192.168.2.36:8008/v1/api
+- AI agent documentation: http://192.168.2.36:8008/v1/guide
+- Search: http://192.168.2.36:8008/v1/search
+- Database PostgreSQL Select Command: http://192.168.2.36:8008/v1/pgselect
+- Database PostgreSQL All Command: http://192.168.2.36:8008/v1/pgcommand
+- Database PostgreSQL get Table: http://192.168.2.36:8008/v1/api/tables
+- Image proxy endpoint (GET and HEAD): http://192.168.2.36:8008/v1/imgproxy
 
 
 ## ต้องห้ามใช้

@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 
 class SMLGOAPIService {
-  static const String baseUrl = 'http://localhost:8008';
+  static const String baseUrl = 'http://192.168.2.36:8008';
   static const Map<String, String> headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -13,9 +13,9 @@ class SMLGOAPIService {
   // Model classes
   static Future<List<LocationData>> findByZipcode(int zipCode) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/get/findbyzipcode'),
+      Uri.parse('$baseUrl/v1/findbyzipcode'),
       headers: headers,
-      body: jsonEncode({'zip_code': zipCode}),
+      body: jsonEncode({'zipcode': zipCode}),
     );
 
     if (response.statusCode == 200) {
@@ -34,7 +34,7 @@ class SMLGOAPIService {
 
   static Future<List<Province>> getProvinces() async {
     final response = await http.post(
-      Uri.parse('$baseUrl/get/provinces'),
+      Uri.parse('$baseUrl/v1/provinces'),
       headers: headers,
       body: jsonEncode({}),
     );
@@ -55,7 +55,7 @@ class SMLGOAPIService {
 
   static Future<List<Amphure>> getAmphures(int provinceId) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/get/amphures'),
+      Uri.parse('$baseUrl/v1/amphures'),
       headers: headers,
       body: jsonEncode({'province_id': provinceId}),
     );
@@ -76,7 +76,7 @@ class SMLGOAPIService {
 
   static Future<List<Tambon>> getTambons(int amphureId, int provinceId) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/get/tambons'),
+      Uri.parse('$baseUrl/v1/tambons'),
       headers: headers,
       body: jsonEncode({'amphure_id': amphureId, 'province_id': provinceId}),
     );
@@ -101,7 +101,7 @@ class SMLGOAPIService {
     int limit = 10,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/search'),
+      Uri.parse('$baseUrl/v1/search'),
       headers: headers,
       body: jsonEncode({'query': query, 'limit': limit}),
     );
@@ -121,7 +121,7 @@ class SMLGOAPIService {
   // Database Operations
   static Future<List<Map<String, dynamic>>> executeSelect(String query) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/select'),
+      Uri.parse('$baseUrl/v1/pgselect'),
       headers: headers,
       body: jsonEncode({'query': query}),
     );
@@ -140,7 +140,7 @@ class SMLGOAPIService {
 
   static Future<Map<String, dynamic>> executeCommand(String query) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/command'),
+      Uri.parse('$baseUrl/v1/pgcommand'),
       headers: headers,
       body: jsonEncode({'query': query}),
     );
@@ -159,7 +159,7 @@ class SMLGOAPIService {
 
   static Future<List<String>> getTables() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/api/tables'),
+      Uri.parse('$baseUrl/v1/tables'),
       headers: {'Accept': 'application/json'},
     );
 
@@ -194,7 +194,7 @@ class SMLGOAPIService {
   // Image Proxy
   static String getProxyImageUrl(String originalUrl) {
     final encodedUrl = Uri.encodeComponent(originalUrl);
-    return '$baseUrl/imgproxy?url=$encodedUrl';
+    return '$baseUrl/v1/imgproxy?url=$encodedUrl';
   }
 }
 

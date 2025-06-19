@@ -57,24 +57,41 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         name: 'SearchBloc',
       );
       final response = await _productRepository.searchProducts(request);
-      if (response.success) {
+      if (response.success && response.data != null) {
         // Better logic: hasMoreData based on current products vs totalCount
-        final hasMoreData =
-            response.data.data.length < response.data.totalCount;
+        final products = response.data!.products; // Use the safe getter
+        final hasMoreData = products.length < response.data!.totalCount;
 
         developer.log(
-          '📈 Initial search results: ${response.data.data.length} products, total available: ${response.data.totalCount}, hasMore: $hasMoreData',
+          '📈 Initial search results: ${products.length} products, total available: ${response.data!.totalCount}, hasMore: $hasMoreData',
           name: 'SearchBloc',
         );
 
         emit(
           SearchSuccess(
-            products: response.data.data,
-            totalCount: response.data.totalCount,
+            products: products,
+            totalCount: response.data!.totalCount,
             originalQuery: event.query,
             enhancedQuery: enhancedQuery,
-            durationMs: response.data.durationMs,
+            durationMs: response.data!.durationMs,
             hasMoreData: hasMoreData,
+          ),
+        );
+      } else if (response.success && response.data == null) {
+        // Handle case where success is true but data is null (empty results)
+        developer.log(
+          '📈 Initial search completed but returned null data - treating as empty results',
+          name: 'SearchBloc',
+        );
+
+        emit(
+          SearchSuccess(
+            products: [],
+            totalCount: 0,
+            originalQuery: event.query,
+            enhancedQuery: enhancedQuery,
+            durationMs: 0.0,
+            hasMoreData: false,
           ),
         );
       } else {
@@ -121,24 +138,42 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
           name: 'SearchBloc',
         );
         final response = await _productRepository.searchProducts(request);
-        if (response.success) {
-          final allProducts = [...currentState.products, ...response.data.data];
+        if (response.success && response.data != null) {
+          final newProducts = response.data!.products; // Use the safe getter
+          final allProducts = [...currentState.products, ...newProducts];
           // Better logic: hasMoreData based on total products loaded vs totalCount
-          final hasMoreData = allProducts.length < response.data.totalCount;
+          final hasMoreData = allProducts.length < response.data!.totalCount;
 
           developer.log(
-            '📦 Loaded ${response.data.data.length} more products, total now: ${allProducts.length}/${response.data.totalCount}, hasMore: $hasMoreData',
+            '📦 Loaded ${newProducts.length} more products, total now: ${allProducts.length}/${response.data!.totalCount}, hasMore: $hasMoreData',
             name: 'SearchBloc',
           );
 
           emit(
             SearchSuccess(
               products: allProducts,
-              totalCount: response.data.totalCount,
+              totalCount: response.data!.totalCount,
               originalQuery: currentState.originalQuery,
               enhancedQuery: currentState.enhancedQuery,
-              durationMs: response.data.durationMs,
+              durationMs: response.data!.durationMs,
               hasMoreData: hasMoreData,
+            ),
+          );
+        } else if (response.success && response.data == null) {
+          // Handle case where success is true but data is null (no more results)
+          developer.log(
+            '📦 Load more completed but returned null data - no more results available',
+            name: 'SearchBloc',
+          );
+
+          emit(
+            SearchSuccess(
+              products: currentState.products,
+              totalCount: currentState.totalCount,
+              originalQuery: currentState.originalQuery,
+              enhancedQuery: currentState.enhancedQuery,
+              durationMs: 0.0,
+              hasMoreData: false,
             ),
           );
         } else {
